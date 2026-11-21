@@ -1,5 +1,22 @@
 # SKY STRIKE
 
+**Team Catalyst Minds · Calcutta AI Club Vibe Coders Hackathon (Ed. 3)**
+
+## ▶ Play now
+
+**[sky-strike-three.vercel.app](https://sky-strike-three.vercel.app)** — free in your browser, on phone or laptop. No sign-up, no install. Tap **PLAY WITH A FRIEND** to fly online together using a 6-letter room code.
+
+## 🎬 Demo video
+
+**SKY STRIKE — Official Launch Trailer (60 s)**
+
+[![SKY STRIKE launch trailer](media/demo-thumb.jpg)](media/SKY-STRIKE-promo-reel.mp4)
+
+[Watch the trailer (MP4, 1080×1920)](media/SKY-STRIKE-promo-reel.mp4) · real gameplay footage, vertical format for Instagram Reels.
+
+---
+
+
 A portrait, top-down arcade dogfighter for desktop and mobile browsers. Fly ten
 fictional fighter jets against nine kinds of enemy aircraft over open sky,
 mountains, desert, snowfields and a burning battlefield. Every enemy carries guns
