@@ -10,9 +10,9 @@
 
 **SKY STRIKE — Official Launch Trailer (60 s)**
 
-[![SKY STRIKE launch trailer](media/demo-thumb.jpg)](media/SKY-STRIKE-promo-reel.mp4)
+[![SKY STRIKE launch trailer](media/demo-thumb.jpg)](https://youtube.com/shorts/JbhqLPXWbno)
 
-[Watch the trailer (MP4, 1080×1920)](media/SKY-STRIKE-promo-reel.mp4) · real gameplay footage, vertical format for Instagram Reels.
+▶ **[Watch on YouTube Shorts](https://youtube.com/shorts/JbhqLPXWbno)** · or [download the MP4 (1080×1920)](media/SKY-STRIKE-promo-reel.mp4) · real gameplay footage.
 
 ---
 
