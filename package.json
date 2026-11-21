@@ -1,0 +1,22 @@
+{
+  "name": "sky-strike",
+  "version": "1.0.0",
+  "description": "SKY STRIKE - browser arcade aircraft combat game",
+  "scripts": {
+    "start": "python3 -m http.server 8080",
+    "build": "node tools/build.mjs"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@fontsource/bebas-neue": "^5.3.0",
+    "@fontsource/chakra-petch": "^5.3.0",
+    "@fontsource/nunito": "^5.3.0",
+    "esbuild": "^0.28.2"
+  },
+  "type": "module",
+  "private": true,
+  "dependencies": {
+    "peerjs": "^1.5.5"
+  }
+}
