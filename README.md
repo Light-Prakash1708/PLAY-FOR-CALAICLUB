@@ -8,6 +8,15 @@ It's Durga Puja in Kolkata. Flashy app cabs ("ZipCab") are taking over the city.
 - ✅ **Learn it in 30 seconds.** Steer, pick up people who are waving, drive into your glowing pandal gate.
 - ✅ **One round is under 3 minutes.** Each night lasts 75 s. A Showdown round lasts 60 s.
 
+## What's new in v2
+- **2.5D cinematic world:** stacked-slab 3D vehicles (a real Ambassador face: chrome bumpers, round headlights, blue stripe), GTA2-style leaning buildings with green shutters and Bengali shop signs, trees, street lamps, headlight cones, night-to-dawn lighting, vignette, an intro camera fly-in, and slow-motion on big hits.
+- **Learn Kolkata as you drive:** each night follows a real route past 4 landmarks (Shyambazar, Kumartuli, College Street, Esplanade, Victoria Memorial, Kalighat, **Howrah Bridge** with a full steel truss over the road, Babughat…). A fact card pops up for each one, a **minimap** tracks your route, and a **Kolkata map** screen collects everything you've found.
+- **Pujo 2026 pandals:** College Square (Albert Hall Museum), Chorebagan ("Beyond Sound"), Tala Prattoy, Yuba Sangha's pond, Rajdanga's "Shodhan", and the Hawa Mahal replica with 953 windows.
+- **3 hearts:** bumps cost ½ a heart, buses and trams a full one. মিষ্টি (mishti) boxes heal you. Lose them all and you're towed.
+- **Kolkata Traffic Police:** crash into traffic or ram your rival and white-uniform sergeants on bikes (and a police jeep at 3★) chase you. Lead them into traffic or wait them out.
+- **Side missions:** 2 per night, plus the 🪁 **Bhokatta!** rooftop kite fight at dawn (also playable from the menu).
+- **Voices:** passengers, conductors, police and the malik speak through the browser's speech engine, in Bengali script when the device has a Bengali voice.
+
 ## Modes
 | Mode | What happens |
 |---|---|

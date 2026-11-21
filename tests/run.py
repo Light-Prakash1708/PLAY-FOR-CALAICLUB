@@ -46,12 +46,19 @@ async def main():
             await pg.keyboard.press('Space')
             r = await pg.evaluate(BOT, 60*40)
             if night in (0,2,4): await pg.screenshot(path=OUT+f'/03_play_n{night}.png')
-            r = await pg.evaluate(BOT, 60*80)
+            r = await pg.evaluate(BOT, 60*160)
             await pg.wait_for_timeout(200)
-            st = await pg.evaluate("()=>({s:__PNR.G.state, w:__PNR.G.taxis[0].wallet, strikes:__PNR.G.strikes, res:__PNR.G.lastResult, hp:__PNR.G.taxis[0].hp, del:__PNR.G.taxis[0].deliveries})")
+            st = await pg.evaluate("()=>({s:__PNR.G.state, w:__PNR.G.taxis[0].wallet, strikes:__PNR.G.strikes, res:__PNR.G.lastResult, hearts:__PNR.G.taxis[0].hearts, del:__PNR.G.taxis[0].deliveries, sets:Object.keys(__PNR.S.map).length, st:__PNR.G.st})")
             log.append(st)
             if st['s']=='dawn':
                 if night==0: await pg.screenshot(path=OUT+'/04_dawn.png')
+                if night in (0,3):
+                    await pg.click('[data-a=kite]'); await pg.wait_for_timeout(300)
+                    await pg.mouse.move(200,300); await pg.wait_for_timeout(300); await pg.mouse.move(450,350, steps=5); await pg.wait_for_timeout(300)
+                    await pg.screenshot(path=OUT+f'/04b_kite{night}.png')
+                    await pg.evaluate("()=>{ const K=__PNR.KITE; for(let i=0;i<60*26 && __PNR.G.state==='kite';i++){ K.mouse={x:300+Math.sin(i/9)*260,y:300+Math.cos(i/13)*150}; __PNR.step(1,1/60);} }")
+                    await pg.wait_for_timeout(200)
+                    print('after kite state', await pg.evaluate("()=>__PNR.G.state"), 'cuts', await pg.evaluate("()=>__PNR.KITE.cuts"))
                 for sel in ['[data-a=repair]','[data-a=buy][data-k=engine]']:
                     el = await pg.query_selector(sel+':not([disabled])')
                     if el: await el.click(); await pg.wait_for_timeout(100)
@@ -67,6 +74,9 @@ async def main():
         # journal + how
         await pg.click('[data-a=journal]'); await pg.wait_for_timeout(200); await pg.screenshot(path=OUT+'/06_journal.png'); await pg.click('[data-a=menu]')
         await pg.click('[data-a=how]'); await pg.click('[data-a=menu]')
+        await pg.click('[data-a=map]'); await pg.wait_for_timeout(200); await pg.screenshot(path=OUT+'/06b_map.png'); await pg.click('[data-a=menu]')
+        await pg.click('[data-a=kitefree]'); await pg.evaluate("()=>{ for(let i=0;i<60*24 && __PNR.G.state==='kite';i++) __PNR.step(1,1/60); }"); await pg.wait_for_timeout(200)
+        await pg.click('[data-a=menu]')
         # 2P
         await pg.click('[data-a=play2]');
         for rnd in range(8):
@@ -75,7 +85,7 @@ async def main():
             await pg.click('[data-a=go]')
             await pg.evaluate(BOT, 60*30)
             if rnd==0: await pg.screenshot(path=OUT+'/07_2p.png')
-            await pg.evaluate(BOT, 60*35)
+            await pg.evaluate(BOT, 60*120)
             await pg.wait_for_timeout(150)
             print('2P', await pg.evaluate("()=>({s:__PNR.G.state,wins:__PNR.G.wins,res:__PNR.G.lastResult, d:[__PNR.G.taxis[0].deliveries,__PNR.G.taxis[1].deliveries]})"))
             await pg.screenshot(path=OUT+f'/08_round{rnd}.png')

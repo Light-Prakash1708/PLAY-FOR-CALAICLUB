@@ -13,6 +13,16 @@
 - Procedural Web Audio: dhak loop that speeds up toward dawn, horn "pyaan-pyaan", tram bell, moo, coins
 - Touch controls, pause (Esc/P/⏸), auto-pause on tab switch, challenge links (`?beat=&from=`)
 
+## v2 systems (added after the first build)
+- **2.5D rendering:** `P(x,y,z)` projects a height z toward camera `CAM`. `slab()` stacks rounded rects (vehicles/props), `ball()` stacks circles (domes, trees, heads), `quad()` draws a building face. Tune lean with `KX`/`KY`.
+- **Landmarks:** `LM` (name, style, fact, map coords). Each night has a `route` of 4 ids, spawned at `ROUTE_T` seconds as `G.sets` and drawn by `drawSetBase` / `drawSetOverhead` (Howrah Bridge truss). `G.caption` shows the fact card. `S.map` stores discoveries.
+- **Hearts:** stored in halves (`MAX_HALF` = 6). `loseHeart(t, msg, halves)`, `towed()`. Mishti pickups heal.
+- **Police:** `offense()` raises `t.wanted` (max 3) and spawns units in `G.police`. `updatePolice()` handles the chase and escape; `caught()` = fine.
+- **Missions:** `MISSIONS[night]` checked against `G.st` counters; the reward is paid at dawn before rent.
+- **Kite mini-game:** `KITE`, `startKite`, `updateKite`, `drawKite`, `finishKite`.
+- **Voice:** `LINES` (bn + romanised) and `TTS.say(key)`. Recorded mp3s placed in `VOICE_FILES` with the same keys override TTS.
+- **Cinematic:** `G.cine` (intro bars + zoom), `cinematicHit()` (slow-mo + zoom), `drawLights()` (additive light pass after the night tint).
+
 ## Code map (`index.html`, one IIFE)
 Search for these section banners (`// ----- name`):
 | Section | What's inside |
@@ -45,7 +55,7 @@ python tests/run.py      # plays 5 story nights + a 2P showdown + mobile, prints
 If `tests/` isn't in the repo, open the game, open DevTools Console, play a night in each mode, and make sure the console stays clean.
 
 ## Ideas for the next 1–2 hours (in priority order)
-1. **Record voice lines** (10 min, biggest impact): `audio/jaben.mp3` ("Dada, Howrah jaben?"), `stolen.mp3`, `paid.mp3`. Then set `VOICE_FILES = { jaben: 'audio/jaben.mp3', stolen: 'audio/stolen.mp3', paid: 'audio/paid.mp3' }`. Keys already wired: `jaben`, `stolen`, `paid`.
+1. **Record real voice lines** (10 min, biggest impact): browser TTS works, but your team's voices will be funnier. Record mp3s for any keys in `LINES` (e.g. `audio/jaben.mp3`, `audio/police.mp3`, `audio/conductor.mp3`, `audio/bhokatta.mp3`) and list them in `VOICE_FILES`.
 2. Playtest with a stranger and tune `NIGHTS` rents to their first-try result. They should just barely survive Panchami.
 3. Sabotage pickups for Showdown (banana peel, fake barricade). Spawn them as a new `kind` in `spawn()`, then handle it in `collisions()`.
 4. Traffic sergeant: chases you if you go through a crowd too fast and fines you.
