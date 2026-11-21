@@ -69,7 +69,7 @@ async def main():
         await pg.click('[data-a=how]'); await pg.click('[data-a=menu]')
         # 2P
         await pg.click('[data-a=play2]');
-        for rnd in range(3):
+        for rnd in range(8):
             st = await pg.evaluate("()=>__PNR.G.state")
             if st!='intro': break
             await pg.click('[data-a=go]')
