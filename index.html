@@ -82,7 +82,8 @@
 (() => {
 
 // ---------------------------------------------------------------- constants
-const W = 600, H = 900, HUD_H = 64;
+const W = 600, HUD_H = 64; // W = world width (road is always centred)
+let H = 900, VW = 600, OX = 0;   // H/VW = visible size, adapts to the screen (taller on phones, wider on laptops)
 const ROAD_L = 95, ROAD_R = 505, LANE_W = (ROAD_R - ROAD_L) / 4;
 const laneX = i => ROAD_L + LANE_W * (i + 0.5);
 const CURB_X = [76, 524];
@@ -127,7 +128,7 @@ const ROUTE_T = [7, 25, 43, 60];
 
 const NIGHTS = [
   { name: 'Panchami', bn: 'পঞ্চমী', rent: 200, scroll: 250, traffic: 1.8, bus: 12, rick: 6, tram: 13, cow: 9, pot: 6, crowd: 0, zip: 10, pass: 2.5, mishti: 7,
-    route: ['shyambazar', 'kumartuli', 'collegest', 'collegesq'], tip: 'Pick up people waving at the curb. Drive into YOUR glowing pandal gate to drop them.' },
+    route: ['howrah', 'kumartuli', 'shyambazar', 'collegest', 'collegesq'], routeT: [0, 17, 32, 47, 62], tip: 'You roll off Howrah Bridge into the city. Pick up people waving at the curb, then drive into YOUR glowing pandal gate.' },
   { name: 'Saptami', bn: 'সপ্তমী', rent: 350, scroll: 275, traffic: 1.5, bus: 10, rick: 5.5, tram: 12, cow: 8, pot: 5, crowd: 14, zip: 7, pass: 2.4, mishti: 7.5,
     route: ['chorebagan', 'esplanade', 'parkstreet', 'victoria'], tip: 'Crash into traffic and the Kolkata Traffic Police come after you. Don’t get caught!' },
   { name: 'Ashtami', bn: 'অষ্টমী', rent: 500, scroll: 300, traffic: 1.35, bus: 9, rick: 5, tram: 11, cow: 7, pot: 4.5, crowd: 10, zip: 6, pass: 2.3, mishti: 8,
@@ -218,16 +219,21 @@ const overlay = document.getElementById('overlay');
 let scale = 1;
 function resize() {
   const vw = window.innerWidth, vh = window.innerHeight;
-  scale = Math.min(vw / W, vh / H);
+  const asp = vw / Math.max(1, vh);
+  if (asp > W / 900) { H = 900; VW = Math.round(clamp(900 * asp, W, 1500)); }
+  else { VW = W; H = Math.round(clamp(W / asp, 900, 1350)); }
+  OX = (VW - W) / 2;
+  CAM.y = H - 260;
+  PAUSE_BTN.x = VW - 52;
+  scale = Math.min(vw / VW, vh / H);
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
-  const cw = Math.floor(W * scale), ch = Math.floor(H * scale);
+  const cw = Math.floor(VW * scale), ch = Math.floor(H * scale);
   wrap.style.width = cw + 'px'; wrap.style.height = ch + 'px';
   wrap.style.setProperty('--u', scale + 'px');
   cvs.width = Math.max(1, Math.floor(cw * dpr)); cvs.height = Math.max(1, Math.floor(ch * dpr));
   cvs.style.width = cw + 'px'; cvs.style.height = ch + 'px';
 }
 window.addEventListener('resize', resize);
-resize();
 
 // ---------------------------------------------------------------- audio (Web Audio, procedural)
 const AU = { ctx: null, master: null, noise: null, next: 0, step: 0, timer: null };
@@ -379,8 +385,9 @@ document.addEventListener('visibilitychange', () => { if (document.hidden && G.s
 const pointers = new Map();
 let touchMode = false;
 try { touchMode = window.matchMedia('(pointer: coarse)').matches; } catch (e) { touchMode = false; }
-function toLogical(e) { const r = cvs.getBoundingClientRect(); return { x: (e.clientX - r.left) / r.width * W, y: (e.clientY - r.top) / r.height * H }; }
-const PAUSE_BTN = { x: W - 52, y: HUD_H + 10, w: 42, h: 42 };
+function toLogical(e) { const r = cvs.getBoundingClientRect(); return { x: (e.clientX - r.left) / r.width * VW, y: (e.clientY - r.top) / r.height * H }; }
+const PAUSE_BTN = { x: VW - 52, y: HUD_H + 10, w: 42, h: 42 };
+resize();
 const inRect = (p, b) => p.x >= b.x && p.x <= b.x + b.w && p.y >= b.y && p.y <= b.y + b.h;
 cvs.addEventListener('pointerdown', e => {
   audioInit();
@@ -400,12 +407,12 @@ function touchButtons() {
   if (G.mode === '2p') {
     return [
       { id: 0, act: 'l', x: 12, y, w: 74, h: s, label: '◀' }, { id: 0, act: 'r', x: 92, y, w: 74, h: s, label: '▶' }, { id: 0, act: 'h', x: 172, y, w: 74, h: s, label: 'HONK' },
-      { id: 1, act: 'l', x: W - 246, y, w: 74, h: s, label: '◀' }, { id: 1, act: 'r', x: W - 166, y, w: 74, h: s, label: '▶' }, { id: 1, act: 'h', x: W - 86, y, w: 74, h: s, label: 'HONK' },
+      { id: 1, act: 'l', x: VW - 246, y, w: 74, h: s, label: '◀' }, { id: 1, act: 'r', x: VW - 166, y, w: 74, h: s, label: '▶' }, { id: 1, act: 'h', x: VW - 86, y, w: 74, h: s, label: 'HONK' },
     ];
   }
   return [
     { id: 0, act: 'l', x: 14, y, w: s, h: s, label: '◀' }, { id: 0, act: 'r', x: 14 + s + 10, y, w: s, h: s, label: '▶' },
-    { id: 0, act: 'u', x: W - 2 * s - 24, y, w: s, h: s, label: 'BOOST' }, { id: 0, act: 'h', x: W - s - 14, y, w: s, h: s, label: 'HONK' },
+    { id: 0, act: 'u', x: VW - 2 * s - 24, y, w: s, h: s, label: 'BOOST' }, { id: 0, act: 'h', x: VW - s - 14, y, w: s, h: s, label: 'HONK' },
   ];
 }
 function touchInput(idx) {
@@ -455,7 +462,7 @@ function resetWorld() {
   G.st = { del: 0, mishti: 0, escape: 0, howrah: 0, fragile: 0, ziphonk: 0, earn: 0, boss: 0, crashes: 0 };
   G.sp = { traffic: 1, bus: 4, rick: 2, tram: 5, cow: 3, pot: 2, crowd: 6, zip: 5, pass: 0.4, mishti: 4 };
   G.rain = [];
-  for (let i = 0; i < 90; i++) G.rain.push({ x: rand(0, W), y: rand(0, H), s: rand(0.7, 1.3) });
+  for (let i = 0; i < 90; i++) G.rain.push({ x: rand(-OX, W + OX), y: rand(0, H), s: rand(0.7, 1.3) });
 }
 function startStory() {
   G.mode = '1p'; G.night = 0; G.strikes = 0; G.up = { engine: 0, bumper: 0, horn: 0 }; G.totalEarned = 0; G.xpGained = 0; G.newCards = 0;
@@ -565,9 +572,10 @@ function runSpawners(dt) {
   const times = c.routeT || ROUTE_T;
   if (c.route && G.routeIdx < c.route.length && G.t >= times[G.routeIdx]) {
     const id = c.route[G.routeIdx], def = LM[id];
-    const len = def.style === 'bridge' ? 1100 : 300;
+    const len = def.style === 'bridge' ? 1300 : 300;
     const side = def.style === 'ghat' || def.style === 'water' ? 1 : (G.routeIdx % 2);
-    G.sets.push({ id, def, y: -len / 2 - 40, len, side, shown: false, t: 0 });
+    const y = def.style === 'bridge' && G.t < 3 ? H - len / 2 + 120 : -len / 2 - 40;
+    G.sets.push({ id, def, y, len, side, shown: false, t: 0 });
     G.routeIdx++;
   }
 }
@@ -970,6 +978,13 @@ function update(rdt) {
   G.flash = Math.max(0, G.flash - rdt);
   const dt = G.slow > 0 ? rdt * 0.3 : rdt;
   G.bgY += G.cfg.scroll * dt;
+  const tx = G.taxis.length && G.state !== 'menu' ? G.taxis.reduce((a, t) => a + t.x, 0) / G.taxis.length : 300 + Math.sin(performance.now() / 2200) * 140;
+  CAM.x = lerp(CAM.x, 300 + (tx - 300) * 0.7, Math.min(1, rdt * 2.5));
+  if (G.state === 'menu') {
+    for (const st of G.sets) st.y += G.cfg.scroll * dt;
+    G.sets = G.sets.filter(st => st.y - st.len / 2 < H + 100);
+    if (!G.sets.some(st => st.def.style === 'bridge')) { G.sets.push({ id: 'howrah', def: LM.howrah, y: G._mb ? -950 : H * 0.45, len: 1300, side: 0, shown: true, t: 0 }); G._mb = true; }
+  }
   if (G.state !== 'play') { updateParticles(dt); return; }
   G.cine = Math.max(0, G.cine - rdt);
   G.t += dt;
@@ -977,7 +992,7 @@ function update(rdt) {
   for (const t of G.taxis) updateTaxi(t, dt);
   updateObjs(dt); updateWaiting(dt); updateZones(dt); updateSets(dt);
   collisions(dt); updatePolice(dt); updateBoss(dt); updateParticles(dt);
-  if (G.cfg.rain) for (const r of G.rain) { r.y += 900 * r.s * dt; r.x -= 120 * dt; if (r.y > H) { r.y = -20; r.x = rand(0, W + 100); } }
+  if (G.cfg.rain) for (const r of G.rain) { r.y += 900 * r.s * dt; r.x -= 120 * dt; if (r.y > H) { r.y = -20; r.x = rand(-OX, W + OX + 100); } }
   if (G.towed) { G.endT -= rdt; if (G.endT <= 0) endNight(); return; }
   if (G.t >= G.len) endNight();
 }
@@ -1053,7 +1068,7 @@ function text(str, x, y, size, color, align = 'center', weight = '900', stroke =
 }
 function bubble(x, y, str, bg = '#fff', fg = '#1b1430', size = 13) {
   ctx.font = `800 ${size}px "Trebuchet MS", system-ui, sans-serif`;
-  const w = ctx.measureText(str).width + 14, h = size + 10, bx = clamp(x - w / 2, 4, W - w - 4), by = y - h - 8;
+  const w = ctx.measureText(str).width + 14, h = size + 10, bx = clamp(x - w / 2, 4 - OX, W + OX - w - 4), by = y - h - 8;
   ctx.fillStyle = bg; rr(bx, by, w, h, 8); ctx.fill();
   const tx = clamp(x, bx + 8, bx + w - 8);
   ctx.beginPath(); ctx.moveTo(tx - 5, by + h); ctx.lineTo(tx + 5, by + h); ctx.lineTo(tx, by + h + 7); ctx.fill();
@@ -1079,7 +1094,7 @@ function drawGround() {
   const to = G.bgY % 60;
   ctx.fillStyle = 'rgba(255,255,255,.025)';
   for (let y = -60 + to; y < H; y += 60) for (let i = 0; i < 5; i++) ctx.fillRect(ROAD_L + hash(Math.floor((G.bgY - y) / 60) * 5 + i) * 400, y + i * 11, 18, 3);
-  ctx.fillStyle = '#8d7b68'; ctx.fillRect(0, 0, ROAD_L, H); ctx.fillRect(ROAD_R, 0, W - ROAD_R, H);
+  ctx.fillStyle = '#8d7b68'; ctx.fillRect(-OX, 0, ROAD_L + OX, H); ctx.fillRect(ROAD_R, 0, W - ROAD_R + OX, H);
   ctx.fillStyle = '#b3a28b'; ctx.fillRect(ROAD_L - 6, 0, 6, H); ctx.fillRect(ROAD_R, 0, 6, H);
   const off = G.bgY % 40;
   ctx.strokeStyle = 'rgba(0,0,0,.12)'; ctx.lineWidth = 2;
@@ -1106,7 +1121,7 @@ function drawBuildings() {
   for (const b of blocks) drawBlock(b);
 }
 function drawBlock(b) {
-  const r = hash(b.id * 2 + b.side), xb = b.side === 0 ? 56 : 544, xo = b.side === 0 ? -60 : 660;
+  const r = hash(b.id * 2 + b.side), xb = b.side === 0 ? 56 : 544, xo = b.side === 0 ? -80 - OX : 680 + OX;
   const zt = 55 + Math.floor(hash(b.id * 7 + b.side) * 4) * 18;
   const col = BUILD_COLS[Math.floor(r * BUILD_COLS.length)];
   // roof
@@ -1191,22 +1206,23 @@ function water(x0, x1, y0, y1) {
 }
 function drawSetBase(s) {
   const d = s.def, y0 = s.y - s.len / 2, y1 = s.y + s.len / 2;
-  const xb = s.side === 0 ? 56 : 544, xo = s.side === 0 ? -60 : 660, sx = s.side === 0 ? 76 : 524;
+  const xb = s.side === 0 ? 56 : 544, xo = s.side === 0 ? -80 - OX : 680 + OX, sx = s.side === 0 ? 76 : 524;
   if (d.style === 'bridge') {
-    water(0, ROAD_L - 8, y0, y1); water(ROAD_R + 8, W, y0, y1);
-    ctx.fillStyle = '#6b6f78'; ctx.fillRect(ROAD_L - 8, y0, 8, s.len); ctx.fillRect(ROAD_R, y0, 8, s.len);
+    water(-OX, ROAD_L - 8, y0, y1); water(ROAD_R + 8, W + OX, y0, y1);
+    ctx.fillStyle = '#7a7f8a'; ctx.fillRect(ROAD_L - 36, y0, 36, s.len); ctx.fillRect(ROAD_R, y0, 36, s.len);
+    ctx.fillStyle = '#5a5f69'; ctx.fillRect(ROAD_L - 38, y0, 4, s.len); ctx.fillRect(ROAD_R + 34, y0, 4, s.len);
     for (const x of [44, 556]) for (const yy of [y0 + 60, y1 - 60]) slab(x, yy, 40, 50, 0, 90, '#7d8593', '#5a606b', 4);
     // boats with lanterns on the river
     for (let i = 0; i < 4; i++) { const by = y0 + 150 + i * 230, bx = i % 2 ? 30 : 572; slab(bx, by, 14, 40, 0, 6, '#6d4c41', '#4e342e', 6); }
     return;
   }
   if (d.style === 'water') {
-    water(ROAD_R + 8, W, y0, y1);
+    water(ROAD_R + 8, W + OX, y0, y1);
     ctx.fillStyle = '#3e7d3a'; ctx.fillRect(ROAD_R + 6, y0, 30, s.len);
     return;
   }
   if (d.style === 'ghat') {
-    water(ROAD_R + 40, W, y0, y1);
+    water(ROAD_R + 40, W + OX, y0, y1);
     for (let i = 0; i < 6; i++) { ctx.fillStyle = i % 2 ? '#c9b48f' : '#b39d77'; ctx.fillRect(ROAD_R + 6 + i * 6, y0, 6, s.len); }
     const t = performance.now() / 500;
     for (let i = 0; i < 10; i++) { const fy = y0 + 20 + i * 28, fx = 560 + Math.sin(t + i) * 14; ctx.fillStyle = '#ffb142'; ctx.beginPath(); ctx.arc(fx, fy, 3, 0, 7); ctx.fill(); }
@@ -1268,20 +1284,30 @@ function drawSetBase(s) {
 }
 function drawSetOverhead(s) {
   if (s.def.style !== 'bridge') return;
-  const y0 = s.y - s.len / 2, y1 = s.y + s.len / 2, step = 92;
-  ctx.strokeStyle = '#8a95a5'; ctx.lineCap = 'round';
-  const line = (a, b, w) => { ctx.lineWidth = w; ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke(); };
-  for (let y = y0; y <= y1; y += step) {
-    const lT = P(84, y, 120), rT = P(516, y, 120);
-    line(P(84, y, 0), lT, 6); line(P(516, y, 0), rT, 6);
-    line(lT, rT, 5);
-    if (y + step <= y1) {
-      const lT2 = P(84, y + step, 120), rT2 = P(516, y + step, 120);
-      line(lT, rT2, 3); line(rT, lT2, 3);
-      line(P(84, y, 0), lT2, 4); line(P(516, y, 0), rT2, 4);
-      line(lT, lT2, 7); line(rT, rT2, 7);
+  const y0 = s.y - s.len / 2, y1 = s.y + s.len / 2, step = 80;
+  const towers = [y0 + 230, y1 - 230];
+  const hTop = y => 95 + 85 * Math.max(0, ...towers.map(t => 1 - Math.abs(y - t) / 330));
+  ctx.strokeStyle = '#97a3b4'; ctx.lineCap = 'round';
+  const line = (a, b, w, c) => { if (c) ctx.strokeStyle = c; ctx.lineWidth = w; ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke(); };
+  for (let y = y0; y <= y1 + 1; y += step) {
+    const h = hTop(y), lT = P(84, y, h), rT = P(516, y, h);
+    line(P(84, y, 0), lT, 5, '#8a95a5'); line(P(516, y, 0), rT, 5);
+    line(P(84, y, 70), P(516, y, 70), 3, '#7d8796');
+    if (y + step <= y1 + 1) {
+      const h2 = hTop(y + step), lT2 = P(84, y + step, h2), rT2 = P(516, y + step, h2);
+      line(P(84, y, 0), lT2, 3.5, '#8a95a5'); line(P(516, y, 0), rT2, 3.5);
+      line(P(84, y + step, 0), lT, 3.5); line(P(516, y + step, 0), rT, 3.5);
+      line(lT, rT2, 2.5, '#7d8796'); line(rT, lT2, 2.5);
+      line(lT, lT2, 8, '#a7b2c2'); line(rT, rT2, 8);
     }
   }
+  // the two giant towers
+  for (const t of towers) for (const x of [84, 516]) { line(P(x, t - 10, 0), P(x, t - 10, 205), 11, '#b2bccb'); line(P(x, t + 10, 0), P(x, t + 10, 205), 11); line(P(x, t - 10, 205), P(x, t + 10, 205), 9); }
+  for (const t of towers) line(P(84, t, 200), P(516, t, 200), 9, '#a7b2c2');
+  // portal sign at the city end
+  const [sx, sy] = P(300, y0 + 40, 102);
+  ctx.fillStyle = '#1b2a3a'; rr(sx - 120, sy - 14, 240, 28, 6); ctx.fill();
+  text('HOWRAH BRIDGE · রবীন্দ্র সেতু', sx, sy + 1, 13, '#f6c324', 'center', '900');
   ctx.lineCap = 'butt';
 }
 
@@ -1570,35 +1596,35 @@ function drawHearts(x, y, halves, align = 'left') {
   }
 }
 function drawHUD() {
-  ctx.fillStyle = 'rgba(27,20,48,.92)'; ctx.fillRect(0, 0, W, HUD_H);
-  ctx.fillStyle = '#f6c324'; ctx.fillRect(0, HUD_H - 3, W, 3);
+  ctx.fillStyle = 'rgba(27,20,48,.92)'; ctx.fillRect(0, 0, VW, HUD_H);
+  ctx.fillStyle = '#f6c324'; ctx.fillRect(0, HUD_H - 3, VW, 3);
   const prog = clamp(G.t / G.len, 0, 1), left = Math.max(0, Math.ceil(G.len - G.t));
-  const bw = 160, bx = W / 2 - bw / 2, by = 31;
+  const bw = 160, bx = VW / 2 - bw / 2, by = 31;
   const grad = ctx.createLinearGradient(bx, 0, bx + bw, 0); grad.addColorStop(0, '#2c2c6c'); grad.addColorStop(0.7, '#a55eea'); grad.addColorStop(1, '#ff9f43');
   ctx.fillStyle = 'rgba(255,255,255,.12)'; rr(bx, by, bw, 11, 5); ctx.fill();
   ctx.fillStyle = grad; rr(bx, by, Math.max(11, bw * prog), 11, 5); ctx.fill();
   text(prog < 0.85 ? '🌙' : '🌅', bx + bw * prog, by + 5, 15, '#fff');
-  text(G.mode === '1p' ? 'DAWN IN ' + left + 's' : left + 's', W / 2, 15, 14, left <= 10 ? '#ff6b6b' : '#fff');
+  text(G.mode === '1p' ? 'DAWN IN ' + left + 's' : left + 's', VW / 2, 15, 14, left <= 10 ? '#ff6b6b' : '#fff');
   if (G.mode === '1p') {
     const t = G.taxis[0];
     text(G.cfg.name.toUpperCase(), 12, 17, 17, '#f6c324', 'left');
     drawHearts(20, 44, t.hearts);
-    text('Strikes ' + '❌'.repeat(G.strikes) + '⬜'.repeat(3 - G.strikes), W / 2, 54, 10, '#dfe6e9', 'center', '700');
+    text('Strikes ' + '❌'.repeat(G.strikes) + '⬜'.repeat(3 - G.strikes), VW / 2, 54, 10, '#dfe6e9', 'center', '700');
     const rent = G.cfg.rent, okc = t.wallet >= rent ? '#7bed9f' : '#ffd32a';
-    text('₹' + t.wallet, W - 12, 20, 24, okc, 'right');
-    text('Rent ₹' + rent + (t.wallet >= rent ? ' ✓' : ''), W - 12, 46, 13, okc, 'right', '700');
+    text('₹' + t.wallet, VW - 12, 20, 24, okc, 'right');
+    text('Rent ₹' + rent + (t.wallet >= rent ? ' ✓' : ''), VW - 12, 46, 13, okc, 'right', '700');
   } else {
     const [a, b] = G.taxis;
     text('P1 ₹' + a.wallet, 12, 18, 21, P_COLORS[0], 'left');
-    text('P2 ₹' + b.wallet, W - 12, 18, 21, P_COLORS[1], 'right');
-    drawHearts(20, 44, a.hearts); drawHearts(W - 20, 44, b.hearts, 'right');
+    text('P2 ₹' + b.wallet, VW - 12, 18, 21, P_COLORS[1], 'right');
+    drawHearts(20, 44, a.hearts); drawHearts(VW - 20, 44, b.hearts, 'right');
     text('★'.repeat(G.wins[0]) + '☆'.repeat(2 - G.wins[0]), 110, 45, 14, P_COLORS[0], 'center');
-    text('☆'.repeat(2 - G.wins[1]) + '★'.repeat(G.wins[1]), W - 110, 45, 14, P_COLORS[1], 'center');
+    text('☆'.repeat(2 - G.wins[1]) + '★'.repeat(G.wins[1]), VW - 110, 45, 14, P_COLORS[1], 'center');
   }
   // wanted
   G.taxis.forEach((t, i) => {
     if (t.wanted <= 0) return;
-    const x = G.mode === '2p' ? (i === 0 ? 150 : W - 150) : W / 2, y = HUD_H + 18;
+    const x = G.mode === '2p' ? (i === 0 ? 150 : VW - 150) : VW / 2, y = HUD_H + 18;
     ctx.fillStyle = 'rgba(30,55,153,.85)'; rr(x - 62, y - 12, 124, 24, 12); ctx.fill();
     text('🚨 ' + '★'.repeat(t.wanted) + '☆'.repeat(3 - t.wanted), x, y + 1, 14, Math.floor(performance.now() / 250) % 2 ? '#fff' : '#ff7675');
   });
@@ -1608,30 +1634,62 @@ function drawHUD() {
   if (G.mode === '1p') drawMissionTracker();
 }
 function drawMinimap() {
-  const x = 8, y = HUD_H + 8, w = 92, h = 128, route = G.cfg.route;
-  if (!route) return;
-  const times = G.cfg.routeT || ROUTE_T;
-  ctx.fillStyle = 'rgba(243,231,201,.92)'; rr(x, y, w, h, 10); ctx.fill();
-  ctx.strokeStyle = '#1b1430'; ctx.lineWidth = 2; rr(x, y, w, h, 10); ctx.stroke();
-  const mp = ([u, v]) => [x + 6 + u * (w - 12), y + 14 + v * (h - 22)];
-  ctx.strokeStyle = '#5dade2'; ctx.lineWidth = 6; ctx.beginPath(); RIVER.forEach((p, i) => { const [a, b] = mp(p); i ? ctx.lineTo(a, b) : ctx.moveTo(a, b); }); ctx.stroke();
-  ctx.strokeStyle = '#e17055'; ctx.lineWidth = 2.5; ctx.setLineDash([4, 3]); ctx.beginPath();
-  route.forEach((id, i) => { const [a, b] = mp(LM[id].map); i ? ctx.lineTo(a, b) : ctx.moveTo(a, b); }); ctx.stroke(); ctx.setLineDash([]);
-  route.forEach((id, i) => { const [a, b] = mp(LM[id].map); ctx.fillStyle = i < G.routeIdx ? '#e84393' : '#fff'; ctx.strokeStyle = '#1b1430'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(a, b, 4, 0, 7); ctx.fill(); ctx.stroke(); });
-  // taxi position along the route
+  const route = G.cfg.route; if (!route) return;
+  const wide = OX >= 140;
+  const w = wide ? Math.min(OX - 24, 300) : (H > 1000 ? 112 : 92), h = w * 1.38, x = wide ? 12 : 8, y = HUD_H + (wide ? 14 : 8);
+  const times = G.cfg.routeT || ROUTE_T, now = performance.now();
+  ctx.fillStyle = 'rgba(243,231,201,.94)'; rr(x, y, w, h, 12); ctx.fill();
+  ctx.strokeStyle = '#1b1430'; ctx.lineWidth = 2; rr(x, y, w, h, 12); ctx.stroke();
+  const mp = ([u, v]) => [x + 8 + u * (w - 16), y + 18 + v * (h - 28)];
+  // the city: faint grid of streets, the river, every landmark
+  ctx.strokeStyle = 'rgba(0,0,0,.07)'; ctx.lineWidth = 1;
+  for (let i = 1; i < 8; i++) { ctx.beginPath(); ctx.moveTo(x + i * w / 8, y + 16); ctx.lineTo(x + i * w / 8, y + h - 6); ctx.moveTo(x + 4, y + 16 + i * (h - 22) / 8); ctx.lineTo(x + w - 4, y + 16 + i * (h - 22) / 8); ctx.stroke(); }
+  ctx.strokeStyle = '#5dade2'; ctx.lineWidth = wide ? 12 : 6; ctx.lineCap = 'round'; ctx.beginPath(); RIVER.forEach((p, i) => { const [a, b] = mp(p); i ? ctx.lineTo(a, b) : ctx.moveTo(a, b); }); ctx.stroke(); ctx.lineCap = 'butt';
+  if (wide) { for (const id in LM) { const [a, b] = mp(LM[id].map); ctx.fillStyle = S.map[id] ? 'rgba(27,20,48,.45)' : 'rgba(27,20,48,.15)'; ctx.beginPath(); ctx.arc(a, b, 3, 0, 7); ctx.fill(); } }
+  // tonight's route
+  const dash = (now / 60) % 14;
+  ctx.strokeStyle = '#e17055'; ctx.lineWidth = wide ? 4 : 2.5; ctx.setLineDash([6, 4]); ctx.lineDashOffset = -dash; ctx.beginPath();
+  route.forEach((id, i) => { const [a, b] = mp(LM[id].map); i ? ctx.lineTo(a, b) : ctx.moveTo(a, b); }); ctx.stroke(); ctx.setLineDash([]); ctx.lineDashOffset = 0;
+  route.forEach((id, i) => {
+    const [a, b] = mp(LM[id].map), done = i < G.routeIdx, next = i === G.routeIdx;
+    if (next) { const r = 6 + ((now / 400) % 1) * 10; ctx.strokeStyle = `rgba(232,67,147,${1 - ((now / 400) % 1)})`; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(a, b, r, 0, 7); ctx.stroke(); }
+    ctx.fillStyle = done ? '#e84393' : '#fff'; ctx.strokeStyle = '#1b1430'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(a, b, wide ? 6 : 4, 0, 7); ctx.fill(); ctx.stroke();
+    if (wide) text(LM[id].name.split(' ·')[0].split(' (')[0], a + 9, b, 11, done ? '#e84393' : '#1b1430', 'left', '800');
+  });
+  // the taxi, gliding between stops
   let seg = 0; while (seg < times.length - 1 && G.t > times[seg + 1]) seg++;
-  const t0 = seg === 0 && G.t < times[0] ? 0 : times[seg], t1 = G.t < times[0] ? times[0] : (times[seg + 1] || G.len);
-  const from = G.t < times[0] ? LM[route[0]].map : LM[route[seg]].map, to = G.t < times[0] ? LM[route[0]].map : (route[seg + 1] ? LM[route[seg + 1]].map : LM[route[seg]].map);
+  const before = G.t < times[0];
+  const from = LM[route[before ? 0 : seg]].map, to = before ? from : (route[seg + 1] ? LM[route[seg + 1]].map : from);
+  const t0 = before ? 0 : times[seg], t1 = before ? times[0] : (times[seg + 1] || G.len);
   const u = clamp((G.t - t0) / Math.max(0.1, t1 - t0), 0, 1);
   const [mx, my] = mp([lerp(from[0], to[0], u), lerp(from[1], to[1], u)]);
-  ctx.fillStyle = '#f6c324'; ctx.strokeStyle = '#1b1430'; ctx.lineWidth = 2; rr(mx - 5, my - 4, 10, 8, 2); ctx.fill(); ctx.stroke();
-  text('KOLKATA', x + w / 2, y + 8, 8, '#1b1430', 'center', '900');
-  const next = route[G.routeIdx];
-  if (next) text('→ ' + LM[next].name.split(' ·')[0].split(' (')[0], x + w / 2, y + h + 9, 9, '#fff', 'center', '800', '#000');
+  const bob = Math.sin(now / 150) * 1.5, sz = wide ? 1.6 : 1;
+  ctx.fillStyle = '#f6c324'; ctx.strokeStyle = '#1b1430'; ctx.lineWidth = 2; rr(mx - 5 * sz, my - 4 * sz + bob, 10 * sz, 8 * sz, 2); ctx.fill(); ctx.stroke();
+  if (G.taxis.some(t => t.wanted > 0) && Math.floor(now / 250) % 2) { ctx.fillStyle = '#3b8bff'; ctx.beginPath(); ctx.arc(mx + 9 * sz, my + 6 * sz, 3 * sz, 0, 7); ctx.fill(); }
+  text('KOLKATA', x + w / 2, y + 10, wide ? 12 : 8, '#1b1430', 'center', '900');
+  const nxt = route[G.routeIdx];
+  if (nxt) { let nm = LM[nxt].name.split(' ·')[0].split(' (')[0].split(',')[0]; if (!wide && nm.length > 15) nm = nm.slice(0, 14) + '…'; text('→ ' + nm, wide ? x + w / 2 : x + 2, y + h + 10, wide ? 12 : 9, '#fff', wide ? 'center' : 'left', '800', '#000'); }
+  G._mapBottom = y + h + 22;
+  if (wide) drawRoutePanel();
+}
+function drawRoutePanel() {
+  // right-hand side panel on laptops: tonight's places and what you've learned
+  const route = G.cfg.route, w = Math.min(OX - 24, 300), x = VW - w - 12;
+  let y = HUD_H + 66;
+  ctx.fillStyle = 'rgba(27,20,48,.82)'; rr(x, y, w, 44 + route.length * 58, 12); ctx.fill();
+  text(G.mode === '1p' ? 'TONIGHT’S ROUTE' : 'SHOWDOWN ROUTE', x + 14, y + 20, 13, '#f6c324', 'left');
+  y += 40;
+  route.forEach((id, i) => {
+    const d = LM[id], done = i < G.routeIdx;
+    text((done ? '✅ ' : i === G.routeIdx ? '➡️ ' : '◻ ') + d.name.split(' (')[0], x + 12, y + 8, 12, done ? '#7bed9f' : '#fff', 'left', '800');
+    const lines = done ? wrapText(d.fact, w - 26, 10).slice(0, 2) : ['Drive on to discover it…'];
+    lines.forEach((ln, k) => text(ln, x + 14, y + 26 + k * 13, 10, 'rgba(255,255,255,.7)', 'left', '700'));
+    y += 58;
+  });
 }
 function drawMissionTracker() {
   const ms = missionStatus(G.night);
-  let y = HUD_H + 172;
+  let y = G._mapBottom || HUD_H + 172;
   for (const m of ms) {
     const s = (m.done ? '✅ ' : '◻ ') + m.text + (m.goal > 1 && !m.done ? ` ${m.v}/${m.goal}` : '');
     ctx.font = '800 10px "Trebuchet MS", system-ui, sans-serif';
@@ -1650,7 +1708,7 @@ function wrapText(str, maxW, size) {
 }
 function drawCaption() {
   const c = G.caption; if (!c) return;
-  const a = Math.min(1, (5 - c.t) * 3, c.t * 2), w = 470, h = 84, x = (W - w) / 2, y = H - 210 + (1 - a) * 30;
+  const a = Math.min(1, (5 - c.t) * 3, c.t * 2), w = 470, h = 84, x = (VW - w) / 2, y = HUD_H + 44 - (1 - a) * 30;
   ctx.globalAlpha = a;
   ctx.fillStyle = 'rgba(255,246,224,.96)'; rr(x, y, w, h, 14); ctx.fill();
   ctx.fillStyle = c.def.pujo ? '#e8442e' : '#1b1430'; rr(x, y, 8, h, 4); ctx.fill();
@@ -1663,17 +1721,17 @@ function drawCaption() {
 function drawCine() {
   if (G.cine <= 0) return;
   const k = G.cine, bars = 70 * clamp(k > 0.6 ? 1 : k / 0.6, 0, 1);
-  ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, bars); ctx.fillRect(0, H - bars, W, bars);
+  ctx.fillStyle = '#000'; ctx.fillRect(0, 0, VW, bars); ctx.fillRect(0, H - bars, VW, bars);
   const a = clamp(k > 2 ? (2.4 - k) / 0.4 : k / 0.8, 0, 1);
   ctx.globalAlpha = a;
   if (G.mode === '1p') {
     const r = G.cfg.route;
-    text(G.cfg.name.toUpperCase() + '  ·  ' + G.cfg.bn, W / 2, H / 2 - 120, 38, '#f6c324', 'center', '900', '#000');
-    text(LM[r[0]].name.split(' ·')[0] + '  →  ' + LM[r[r.length - 1]].name.split(' ·')[0], W / 2, H / 2 - 82, 16, '#fff', 'center', '800', '#000');
-    text('Rent by dawn: ₹' + G.cfg.rent, W / 2, H / 2 - 56, 15, '#ffd32a', 'center', '800', '#000');
+    text(G.cfg.name.toUpperCase() + '  ·  ' + G.cfg.bn, VW / 2, H / 2 - 120, 38, '#f6c324', 'center', '900', '#000');
+    text(LM[r[0]].name.split(' ·')[0] + '  →  ' + LM[r[r.length - 1]].name.split(' ·')[0], VW / 2, H / 2 - 82, 16, '#fff', 'center', '800', '#000');
+    text('Rent by dawn: ₹' + G.cfg.rent, VW / 2, H / 2 - 56, 15, '#ffd32a', 'center', '800', '#000');
   } else {
-    text('ROUND ' + G.round, W / 2, H / 2 - 110, 44, '#fff', 'center', '900', '#000');
-    text('RAM TO STEAL FARES!', W / 2, H / 2 - 70, 18, '#ff4d6d', 'center', '900', '#000');
+    text('ROUND ' + G.round, VW / 2, H / 2 - 110, 44, '#fff', 'center', '900', '#000');
+    text('RAM TO STEAL FARES!', VW / 2, H / 2 - 70, 18, '#ff4d6d', 'center', '900', '#000');
   }
   ctx.globalAlpha = 1;
 }
@@ -1690,11 +1748,12 @@ function drawTouch() {
   ctx.globalAlpha = 1;
 }
 function draw() {
-  ctx.setTransform(cvs.width / W, 0, 0, cvs.height / H, 0, 0);
+  ctx.setTransform(cvs.width / VW, 0, 0, cvs.height / H, 0, 0);
   if (G.state === 'kite') { drawKite(); return; }
   const prog = G.state === 'play' || G.state === 'paused' ? clamp(G.t / G.len, 0, 1) : 0;
   const night = 1 - prog * 0.75;
   ctx.save();
+  ctx.translate(OX, 0);
   if (G.shake > 0) ctx.translate(rand(-G.shake, G.shake) * 0.5, rand(-G.shake, G.shake) * 0.5);
   // camera: cinematic intro zoom + impact zoom
   const inGame = G.state !== 'menu';
@@ -1728,19 +1787,19 @@ function draw() {
   drawWires();
   for (const s of G.sets) drawSetOverhead(s);
   // night tint, then additive lights on top = cinematic night
-  ctx.fillStyle = `rgba(12,10,48,${0.5 * night})`; ctx.fillRect(-200, -200, W + 400, H + 400);
-  if (prog > 0.6) { ctx.fillStyle = `rgba(255,140,60,${(prog - 0.6) * 0.35})`; ctx.fillRect(-200, -200, W + 400, H + 400); }
+  ctx.fillStyle = `rgba(12,10,48,${0.5 * night})`; ctx.fillRect(-200 - OX, -200, W + 400 + 2 * OX, H + 400);
+  if (prog > 0.6) { ctx.fillStyle = `rgba(255,140,60,${(prog - 0.6) * 0.35})`; ctx.fillRect(-200 - OX, -200, W + 400 + 2 * OX, H + 400); }
   drawLights(night);
   drawLightStrings();
   if (inGame) drawParticles();
   if (G.cfg.rain && G.state === 'play') { ctx.strokeStyle = 'rgba(180,200,255,.35)'; ctx.lineWidth = 1.2; ctx.beginPath(); for (const r of G.rain) { ctx.moveTo(r.x, r.y); ctx.lineTo(r.x - 5, r.y + 16 * r.s); } ctx.stroke(); }
   ctx.restore();
   // vignette
-  const vg = ctx.createRadialGradient(W / 2, H / 2, H * 0.35, W / 2, H / 2, H * 0.75);
-  vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,.45)'); ctx.fillStyle = vg; ctx.fillRect(0, 0, W, H);
-  if (G.flash > 0) { ctx.fillStyle = `rgba(255,40,60,${G.flash * 1.2})`; ctx.fillRect(0, 0, W, H); }
+  const vg = ctx.createRadialGradient(VW / 2, H / 2, H * 0.35, VW / 2, H / 2, Math.max(VW, H) * 0.8);
+  vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,.45)'); ctx.fillStyle = vg; ctx.fillRect(0, 0, VW, H);
+  if (G.flash > 0) { ctx.fillStyle = `rgba(255,40,60,${G.flash * 1.2})`; ctx.fillRect(0, 0, VW, H); }
   if (inGame) {
-    for (const f of G.floats) { ctx.globalAlpha = clamp(f.life / f.max * 1.6, 0, 1); text(f.text, clamp(f.x, 90, W - 90), f.y, f.size, f.color, 'center', '900', '#1b1430'); }
+    for (const f of G.floats) { ctx.globalAlpha = clamp(f.life / f.max * 1.6, 0, 1); text(f.text, clamp(f.x + OX, 90, VW - 90), f.y, f.size, f.color, 'center', '900', '#1b1430'); }
     ctx.globalAlpha = 1;
     drawCaption();
     if (G.state === 'play' || G.state === 'paused') drawHUD();
@@ -1768,7 +1827,7 @@ function updateKite(dt) {
   // control: finger/mouse target, else keys
   let tx = null, ty = null;
   const ptr = pointers.size ? [...pointers.values()][0] : K.mouse;
-  if (ptr) { tx = ptr.x; ty = ptr.y; }
+  if (ptr) { tx = ptr.x - OX; ty = ptr.y; }
   let ax = 0, ay = 0;
   if (tx != null) { ax = (tx - me.x) * 9; ay = (ty - me.y) * 9; }
   if (keys.ArrowLeft || keys.KeyA) ax -= 1500; if (keys.ArrowRight || keys.KeyD) ax += 1500;
@@ -1825,15 +1884,17 @@ function drawKiteShape(x, y, col, rot, alive) {
 }
 function drawKite() {
   const K = KITE;
-  const sky = ctx.createLinearGradient(0, 0, 0, H); sky.addColorStop(0, '#3b2a6b'); sky.addColorStop(0.55, '#ff9f68'); sky.addColorStop(1, '#ffd29a');
-  ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
+  ctx.save(); ctx.translate(OX, 0);
+  const sky = ctx.createLinearGradient(0, 0, 0, H); sky.addColorStop(0, '#3b2a6b'); sky.addColorStop(0.5, '#ff9f68'); sky.addColorStop(1, '#ffd29a');
+  ctx.fillStyle = sky; ctx.fillRect(-OX, 0, VW, H);
   ctx.fillStyle = 'rgba(255,240,200,.9)'; ctx.beginPath(); ctx.arc(470, 560, 60, 0, 7); ctx.fill();
   // Howrah bridge silhouette on the horizon
   ctx.strokeStyle = 'rgba(60,40,70,.55)'; ctx.lineWidth = 4;
   ctx.beginPath(); ctx.moveTo(40, 640); ctx.lineTo(120, 560); ctx.lineTo(300, 600); ctx.lineTo(480, 560); ctx.lineTo(560, 640); ctx.stroke();
   for (let x = 120; x <= 480; x += 30) { ctx.beginPath(); ctx.moveTo(x, 580 + Math.abs(300 - x) * -0.12 + 10); ctx.lineTo(x, 640); ctx.stroke(); }
   // rooftops with water tanks (3D-ish)
-  const roofs = [[0, 700, 140, 200, '#7a4a3a'], [120, 740, 150, 160, '#5b3a6b'], [250, 720, 120, 180, '#3f5d6b'], [350, 750, 140, 150, '#6b5b3a'], [470, 710, 130, 190, '#6b3a4f']];
+  const roofs = [];
+  for (let x = -OX - 40, i = 0; x < W + OX; x += 120, i++) roofs.push([x, 700 + Math.floor(hash(i + 3) * 70), 130, H, BUILD_COLS[i % BUILD_COLS.length]]);
   for (const [x, y, w, h, c] of roofs) { ctx.fillStyle = shade(c, -0.3); ctx.fillRect(x + 8, y - 8, w, h); ctx.fillStyle = c; ctx.fillRect(x, y, w, h); ctx.fillStyle = '#222'; ctx.fillRect(x + 14, y - 26, 26, 22); ctx.fillStyle = '#444'; ctx.fillRect(x + 14, y - 30, 26, 6); }
   for (const f of K.foes) {
     if (f.alive) { ctx.strokeStyle = 'rgba(255,255,255,.55)'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(f.a.x, f.a.y); ctx.quadraticCurveTo((f.a.x + f.x) / 2 + 30, (f.a.y + f.y) / 2 + 40, f.x, f.y); ctx.stroke(); }
@@ -1845,11 +1906,12 @@ function drawKite() {
   // spool on the rooftop
   slab(KANCHOR.x, KANCHOR.y, 18, 18, 0, 10, '#c0392b', '#7a1d12', 9);
   drawParticles();
-  ctx.fillStyle = 'rgba(27,20,48,.85)'; ctx.fillRect(0, 0, W, 60);
+  ctx.restore();
+  ctx.fillStyle = 'rgba(27,20,48,.85)'; ctx.fillRect(0, 0, VW, 60);
   text('🪁 BHOKATTA!', 14, 30, 22, '#f6c324', 'left');
-  text('Cuts: ' + K.cuts + '  ·  ' + Math.max(0, Math.ceil(K.len - K.t)) + 's', W - 14, 30, 18, '#fff', 'right');
-  if (K.msgT > 0) text(K.msg, W / 2, 130, K.msg.length > 24 ? 17 : 32, '#fff', 'center', '900', '#1b1430');
-  text(touchMode ? 'Drag your finger to fly' : 'Mouse or arrow keys to fly', W / 2, H - 20, 13, '#1b1430', 'center', '800');
+  text('Cuts: ' + K.cuts + '  ·  ' + Math.max(0, Math.ceil(K.len - K.t)) + 's', VW - 14, 30, 18, '#fff', 'right');
+  if (K.msgT > 0) text(K.msg, VW / 2, 130, K.msg.length > 24 ? 17 : 32, '#fff', 'center', '900', '#1b1430');
+  text(touchMode ? 'Drag your finger to fly' : 'Mouse or arrow keys to fly', VW / 2, H - 20, 13, '#1b1430', 'center', '800');
 }
 
 // ---------------------------------------------------------------- main loop

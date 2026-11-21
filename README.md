@@ -10,12 +10,15 @@ It's Durga Puja in Kolkata. Flashy app cabs ("ZipCab") are taking over the city.
 
 ## What's new in v2
 - **2.5D cinematic world:** stacked-slab 3D vehicles (a real Ambassador face: chrome bumpers, round headlights, blue stripe), GTA2-style leaning buildings with green shutters and Bengali shop signs, trees, street lamps, headlight cones, night-to-dawn lighting, vignette, an intro camera fly-in, and slow-motion on big hits.
-- **Learn Kolkata as you drive:** each night follows a real route past 4 landmarks (Shyambazar, Kumartuli, College Street, Esplanade, Victoria Memorial, Kalighat, **Howrah Bridge** with a full steel truss over the road, Babughat…). A fact card pops up for each one, a **minimap** tracks your route, and a **Kolkata map** screen collects everything you've found.
+- **Learn Kolkata as you drive:** each night follows a real route past 4 landmarks (Shyambazar, Kumartuli, College Street, Esplanade, Victoria Memorial, Kalighat, **Howrah Bridge**: night 1 opens on it, crossing from Howrah into the city under the steel truss and towers, and it's also the menu backdrop, Babughat…). A fact card pops up for each one, a **minimap** tracks your route, and a **Kolkata map** screen collects everything you've found.
 - **Pujo 2026 pandals:** College Square (Albert Hall Museum), Chorebagan ("Beyond Sound"), Tala Prattoy, Yuba Sangha's pond, Rajdanga's "Shodhan", and the Hawa Mahal replica with 953 windows.
 - **3 hearts:** bumps cost ½ a heart, buses and trams a full one. মিষ্টি (mishti) boxes heal you. Lose them all and you're towed.
 - **Kolkata Traffic Police:** crash into traffic or ram your rival and white-uniform sergeants on bikes (and a police jeep at 3★) chase you. Lead them into traffic or wait them out.
 - **Side missions:** 2 per night, plus the 🪁 **Bhokatta!** rooftop kite fight at dawn (also playable from the menu).
 - **Voices:** passengers, conductors, police and the malik speak through the browser's speech engine, in Bengali script when the device has a Bengali voice.
+
+## Fits any screen
+The view adapts to the screen instead of letterboxing. On laptops and wide screens it gets **wider**, showing more of the city, with a big live **Kolkata map** on the left and **tonight's route** with landmark facts on the right. On phones in portrait it gets **taller**, so you see more road. Nothing is cropped, and it adjusts live when you rotate or resize. The camera follows your steering, so the 3D buildings shift as you drive.
 
 ## Modes
 | Mode | What happens |

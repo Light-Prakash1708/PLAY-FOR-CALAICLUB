@@ -13,6 +13,9 @@
 - Procedural Web Audio: dhak loop that speeds up toward dawn, horn "pyaan-pyaan", tram bell, moo, coins
 - Touch controls, pause (Esc/P/⏸), auto-pause on tab switch, challenge links (`?beat=&from=`)
 
+## Responsive view (v2.1)
+`W` = 600 is the **world** width (the road is always centred). `VW` × `H` is the **visible** size, recomputed in `resize()`: wider on landscape screens (up to 1500), taller on portrait phones (up to 1350). `OX = (VW - W) / 2` is the world's x offset. World drawing happens inside `ctx.translate(OX, 0)`; the HUD, captions, touch buttons and kite header use screen coordinates (`VW`). On wide screens (`OX >= 140`) `drawMinimap` draws the big map and `drawRoutePanel` draws the right-hand panel. `CAM.x` follows the taxi for dynamic perspective.
+
 ## v2 systems (added after the first build)
 - **2.5D rendering:** `P(x,y,z)` projects a height z toward camera `CAM`. `slab()` stacks rounded rects (vehicles/props), `ball()` stacks circles (domes, trees, heads), `quad()` draws a building face. Tune lean with `KX`/`KY`.
 - **Landmarks:** `LM` (name, style, fact, map coords). Each night has a `route` of 4 ids, spawned at `ROUTE_T` seconds as `G.sets` and drawn by `drawSetBase` / `drawSetOverhead` (Howrah Bridge truss). `G.caption` shows the fact card. `S.map` stores discoveries.
