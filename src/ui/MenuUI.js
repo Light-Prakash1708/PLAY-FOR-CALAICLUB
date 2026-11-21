@@ -40,7 +40,7 @@ export class MenuUI {
       </div>
       <div class="menu-logo">${LOGO}</div>
       <div class="menu-main">
-        <button class="btn play battle-go" data-act="battle">${ic('burst')} TEAM BATTLE<small>4 v 4 dogfight · shrinking zone · 2½ minutes</small></button>
+        <button class="btn play battle-go" data-act="battle">${ic('burst')} TEAM BATTLE<small class="js-bsub">3 v 3 dogfight · play online with a friend · 2½ min</small></button>
         <button class="btn play teal camp-go" data-act="campaign">CAMPAIGN<small class="js-next"></small></button>
         <div class="tiles">
           <button class="tile" data-act="hangar"><span class="tic">${ic('plane')}</span><span><b>HANGAR</b><span class="js-fleet">1/10 aircraft</span></span></button>
@@ -49,7 +49,7 @@ export class MenuUI {
           <button class="tile" data-act="settings"><span class="tic">${ic('gear')}</span><span><b>SETTINGS</b><span>Audio, controls, graphics</span></span></button>
         </div>
       </div>
-      <div class="menu-foot">SKY STRIKE v3.0${game.dev ? ' - DEVELOPER BUILD (everything unlocked)' : ''}</div>`);
+      <div class="menu-foot">SKY STRIKE v8.1${game.dev ? ' - DEVELOPER BUILD (everything unlocked)' : ''}</div>`);
     ui.addModal('daily', `<div class="kicker">COME BACK EVERY DAY</div><h3>DAILY REWARD</h3>
       <div class="days js-days"></div>
       <div class="stack"><button class="btn orange js-claim" data-act="claim" data-quiet>CLAIM</button><button class="btn white small" data-act="daily-close">CLOSE</button></div>`);
@@ -93,6 +93,8 @@ export class MenuUI {
     m.querySelector('.js-plvl').textContent = pilot.level;
     m.querySelector('.js-rank').textContent = pilot.rank;
     m.querySelector('.js-xp').style.width = Math.round(pilot.progress * 100) + '%';
+    const z = (d.battle && d.battle.cfg && +d.battle.cfg.size) || 3;
+    m.querySelector('.js-bsub').textContent = `${z} v ${z} dogfight · play online with a friend · 2½ min`;
     const allDone = d.levels[LEVELS.length] && d.levels[LEVELS.length].done;
     const next = LEVELS[d.unlockedLevel - 1];
     m.querySelector('.js-next').textContent = allDone ? 'Campaign complete - replay any mission' : `Mission ${next.id}: ${next.name}`;

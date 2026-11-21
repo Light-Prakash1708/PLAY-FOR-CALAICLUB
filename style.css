@@ -422,10 +422,10 @@ input[type=range]::-moz-range-thumb { width: 1em; height: 1em; border-radius: 50
 .bp-bar.heat i { background: linear-gradient(90deg, #FFD24A, #FF7A2E); width: 0; transition: width 0.06s; }
 .bp-bar.heat.over i { background: var(--red); animation: warn 0.3s steps(2) infinite; }
 .bp-bar.bst i { background: #4FC3F7; }
-.pips { display: inline-flex; gap: 0.12em; }
-.pips i { width: 0.32em; height: 0.7em; border-radius: 0.1em; background: rgba(255, 255, 255, 0.22); }
-.pips i.on { background: #fff; }
-.pips.fl i.on { background: #FFB347; }
+.bp-row .pips { display: inline-flex; gap: 0.12em; }
+.bp-row .pips i { width: 0.32em; height: 0.7em; border-radius: 0.1em; background: rgba(255, 255, 255, 0.22); }
+.bp-row .pips i.on { background: #fff; }
+.bp-row .pips.fl i.on { background: #FFB347; }
 .two .bt-panel.p1 { left: auto; right: 0.6em; top: calc(var(--sat) + 10.4em); }
 .two .bt-feed { top: calc(var(--sat) + 16.6em); }
 #s-battle .banner { top: 22%; }
@@ -709,3 +709,37 @@ input[type=range]::-moz-range-thumb { width: 1em; height: 1em; border-radius: 50
 .on-dot.live { background: #22C55E; box-shadow: 0 0 0 .2em rgba(34,197,94,.25); animation: onpulse 1.6s ease-in-out infinite; }
 @keyframes onpulse { 50% { box-shadow: 0 0 0 .38em rgba(34,197,94,0); } }
 .bs-go.waiting { filter: saturate(.4); opacity: .85; }
+
+/* ======================================================================
+   v8.1 fixes
+   ====================================================================== */
+/* results, pause and other overlay panels scroll instead of clipping on short screens */
+.overlay .panel { max-height: calc(100% - 1em); overflow-y: auto; scrollbar-width: none; touch-action: pan-y; }
+.overlay .panel::-webkit-scrollbar { display: none; }
+#app.short .bres-board { max-height: 8.5em; }
+#app.short .bres-score { font-size: 1.9em; margin: 0.05em 0 0.15em; }
+#app.short .overlay .panel { padding: 0.8em 1em; }
+/* radio: the speaker's name stays on one line */
+.rd-bubble .rd-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#app.land .radio { width: min(23em, 40%); }
+/* battle setup: section labels stay readable over white clouds */
+.bs-label { text-shadow: 0 0.06em 0 rgba(30, 50, 60, 0.55), 0 0 0.5em rgba(20, 40, 50, 0.45); }
+/* battle setup: CONTROLS and PLAY WITH A FRIEND live next to FIGHT so they are never below the fold */
+.bs-foot .bs-row { margin: 0 0 0.5em; }
+#app.land .bs-foot { display: flex; gap: 0.6em; align-items: stretch; }
+#app.land .bs-foot .bs-row { display: contents; }
+#app.land .bs-foot .bs-row .btn { flex: 0 0 9.5em; margin: 0; font-size: 0.95em; }
+#app.land .bs-foot .bs-row [data-act=controls] { order: 0; }
+#app.land .bs-foot .bs-go { order: 1; flex: 1; }
+#app.land .bs-foot .bs-row [data-act=binvite] { order: 2; }
+#app.land.short .bs-map { height: 3.3em; }
+#app.land.short .bs-go { font-size: 1.35em; }
+#app.land.short .bs-label { margin: 0.35em 0 0.25em; }
+/* guest in a friend's room: the host's choices are shown, and can't be changed */
+.bs-locked .bs-map, .bs-locked .js-size button, .bs-locked .js-diff button { pointer-events: none; }
+.bs-locked .bs-map:not(.on), .bs-locked .js-size button:not(.on), .bs-locked .js-diff button:not(.on) { opacity: 0.45; }
+.bs-lockmsg { display: none; font-size: 0.62em; color: #fff; margin: -0.2em 0 0.3em; text-shadow: 0 1px 2px rgba(30, 40, 50, 0.6); }
+.bs-locked .bs-lockmsg { display: block; }
+/* loading screen: on wide screens the title sits left and the planet right, instead of on top of each other */
+#app.land #s-loading.screen:not(#s-hud):not(#s-battle):not(#s-intro) { left: max(1em, calc(30% - 15.5em)); }
+.load-tip { text-shadow: 0 1px 3px rgba(0, 0, 0, 0.75), 0 0 0.6em rgba(10, 18, 48, 0.8) !important; }

@@ -23,6 +23,7 @@ export class BattleUI {
           <div class="bs-plane js-plane"></div>
         </div>
         <div class="bs-label">BATTLEGROUND</div>
+        <div class="bs-lockmsg">Your friend is hosting: they pick the battleground, squad size and skill.</div>
         <div class="bs-maps">${Object.values(MAPS).map((m) => `<button class="bs-map m-${m.id}" data-act="bmap" data-id="${m.id}"><b>${m.name}</b><span>${m.sub}</span></button>`).join('')}</div>
         <div class="bs-label">SQUAD SIZE</div>
         <div class="bs-seg bs-size js-size">${Object.entries(SIZES).map(([id, z]) => `<button data-act="bsize" data-id="${id}">${z.name}<small>${z.sub}</small></button>`).join('')}</div>
@@ -36,12 +37,14 @@ export class BattleUI {
           <div><b class="js-sq">3v3</b><span class="js-sqs">you + 2 wingmen</span></div>
         </div>
         <div class="bs-help js-help"></div>
+      </div>
+      <div class="bs-foot">
         <div class="bs-row">
           <button class="btn white small" data-act="controls">${ic('gear')}CONTROLS</button>
           <button class="btn teal small" data-act="binvite">${ic('plane')}PLAY WITH A FRIEND</button>
         </div>
-      </div>
-      <div class="bs-foot"><button class="btn play bs-go" data-act="bfight">FIGHT!<small class="js-gosub"></small></button></div>`);
+        <button class="btn play bs-go" data-act="bfight">FIGHT!<small class="js-gosub"></small></button>
+      </div>`);
     ui.on('menu-back', () => { this.challenge = null; game.enterMenu(); });
     ui.on('bmap', (el) => { this.cfg.map = el.dataset.id; this._saveCfg(); this.refreshSetup(); });
     ui.on('bdiff', (el) => { this.cfg.difficulty = el.dataset.id; this._saveCfg(); this.refreshSetup(); });
@@ -181,7 +184,11 @@ export class BattleUI {
   }
   refreshSetup() {
     if (this.online) { this.online.pushLobby(); this.online.refreshBar(); }
-    const s = this.setup, cfg = this.cfg, g = this.game, touch = this._touch();
+    const s = this.setup, g = this.game, touch = this._touch();
+    // a guest in a friend's room sees (and fights on) the host's choices
+    const on = this.online, hostCfg = on && on.net.isGuest && on.net.connected ? on.hostCfg : null;
+    const cfg = hostCfg ? { ...this.cfg, map: MAPS[hostCfg.map] ? hostCfg.map : 'desert', size: SIZES[hostCfg.size] ? +hostCfg.size : 3, difficulty: DIFFICULTY[hostCfg.difficulty] ? hostCfg.difficulty : 'normal' } : this.cfg;
+    s.classList.toggle('bs-locked', !!hostCfg);
     for (const b of s.querySelectorAll('.bs-map')) b.classList.toggle('on', b.dataset.id === cfg.map);
     for (const b of s.querySelectorAll('.js-diff button')) b.classList.toggle('on', b.dataset.id === cfg.difficulty);
     for (const b of s.querySelectorAll('.js-size button')) b.classList.toggle('on', +b.dataset.id === +cfg.size);

@@ -73,7 +73,10 @@ export class IntroScene {
     // camera: hold, then dive toward the planet
     const base = Math.min(w, h) * (loading ? 0.3 : 0.32);
     const dive = loading ? 0 : ease(clamp((t - 4.6) / 1.6, 0, 1));
-    const R = base * (1 + dive * 1.6), cx = w / 2, cy = h * (loading ? 0.6 : 0.5) + dive * R * 0.55;
+    const land = !!this.game.landscape;
+    // loading screen: planet to the right of the title on wide screens, lower down on phones (clear of the tips)
+    const R = base * (1 + dive * 1.6), cx = loading && land ? w * 0.68 : w / 2;
+    const cy = (loading ? (land ? h * 0.55 : h * 0.68) : h * 0.5) + dive * R * 0.55;
     const rot = t * 0.035, crot = t * 0.05;
     // jets behind the planet first, then the planet, then jets in front
     const pts = this.jets.map((j) => {

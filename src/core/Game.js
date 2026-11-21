@@ -325,7 +325,7 @@ export class Game {
   // ---- loop -----------------------------------------------------------------------
   /** Lag guard: if gameplay runs below ~42 fps for 3 s, drop one graphics level (and say so once). */
   _perfGuard(dt) {
-    if (!this.state.is(State.PLAYING)) { this._slowT = 0; return; }
+    if (!this.state.is(State.PLAYING) || document.hidden) { this._slowT = 0; return; }
     this._ema = (this._ema || 1 / 60) * 0.94 + dt * 0.06;
     if (this._cool > 0) { this._cool -= dt; return; }
     this._slowT = this._ema > 1 / 42 ? (this._slowT || 0) + dt : 0;
@@ -341,8 +341,10 @@ export class Game {
     this._perfGuard(dt);
     if (!this.state.is(State.PAUSED)) this.radio.update(dt);
     if (this.input.consumePause()) {
-      if (this.state.is(State.PLAYING)) this.pause();
-      else if (this.state.is(State.PAUSED) && !this.ui.anyModal()) this.resume();
+      if (this.ui.anyModal()) this.ui.closeTopModal();           // Esc closes the open dialog first
+      else if (this.onlinePause) this.resume();                   // online match: Esc toggles the menu
+      else if (this.state.is(State.PLAYING)) this.pause();
+      else if (this.state.is(State.PAUSED)) this.resume();
     }
     switch (this.state.current) {
       case State.PLAYING:

@@ -43,7 +43,10 @@ export class InputManager {
   _bindKeyboard() {
     window.addEventListener('keydown', (e) => {
       if (this.capture) { e.preventDefault(); e.stopPropagation(); const fn = this.capture; this.capture = null; fn(e.code); return; }
-      if (e.target && /INPUT|SELECT|TEXTAREA/.test(e.target.tagName)) return;
+      if (e.target && /INPUT|SELECT|TEXTAREA/.test(e.target.tagName)) {
+        if (e.code === 'Escape' && !e.repeat) { this._pause = true; e.target.blur(); }   // Esc still closes the dialog
+        return;
+      }
       if (e.code === 'Escape' || e.code === 'KeyP') { if (!e.repeat) this._pause = true; e.preventDefault(); return; }
       if (!this.enabled) return;
       this.codes.add(e.code);

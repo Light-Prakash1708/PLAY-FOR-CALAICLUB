@@ -55,6 +55,15 @@ export class UI {
   closeModal(id) { this.$('#m-' + id).classList.remove('on'); }
   modalOpen(id) { return this.$('#m-' + id).classList.contains('on'); }
   anyModal() { return !!this.root.querySelector('.modal.on'); }
+  /** Esc: closes the front-most dialog through its own close button, so its usual save/cleanup runs. */
+  closeTopModal() {
+    const open = [...this.root.querySelectorAll('.modal.on')];
+    if (!open.length) return;
+    const z = (m) => +getComputedStyle(m).zIndex || 0;
+    const top = open.reduce((a, m) => (z(m) >= z(a) ? m : a));
+    const btn = top.querySelector('[data-act$="-close"], [data-act="confirm-no"]');
+    if (btn) btn.click(); else top.classList.remove('on');
+  }
 
   confirm({ title, text, yes = 'OK', danger = false, onYes }) {
     this.$('.js-ct').textContent = title;

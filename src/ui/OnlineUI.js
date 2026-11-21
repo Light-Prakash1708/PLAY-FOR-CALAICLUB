@@ -163,7 +163,8 @@ export class OnlineUI {
     else if (st === 'connected') { msg = `<i class="on-spin"></i> Connected to <b>${esc(name || 'the host')}</b>. Waiting for them to start the battle...`; cls = 'good'; }
     else if (st === 'error') { msg = esc(net.error); cls = 'bad'; }
     const s = $('.js-onstat'); s.innerHTML = msg; s.className = 'on-status js-onstat ' + cls;
-    this.refreshBar();
+    if (this.ui.current === 'bsetup') this.bui.refreshSetup();      // also shows/unlocks the host's choices for a guest
+    else this.refreshBar();
   }
   /** The strip on the setup screen while a friend is linked. */
   refreshBar() {

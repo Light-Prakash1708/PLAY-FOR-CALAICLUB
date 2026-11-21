@@ -1,5 +1,5 @@
 // Offline support for the installed app: cache the game shell, serve it cache-first.
-const CACHE = 'sky-strike-v2';
+const CACHE = 'sky-strike-v8-1';
 const FILES = ['./', './index.html', './manifest.webmanifest', './assets/icons/icon-192.png', './assets/icons/icon-512.png'];
 self.addEventListener('install', (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(FILES)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', (e) => { e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => k !== CACHE).map((k) => caches.delete(k)))).then(() => self.clients.claim())); });
