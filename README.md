@@ -8,6 +8,14 @@ It's Durga Puja in Kolkata. Flashy app cabs ("ZipCab") are taking over the city.
 - ✅ **Learn it in 30 seconds.** Steer, pick up people who are waving, drive into your glowing pandal gate.
 - ✅ **One round is under 3 minutes.** Each night lasts 75 s. A Showdown round lasts 60 s.
 
+## What's new in v3: RPG story mode
+- **A villain with a plan:** ZipCab's AI, **SURGE**, launches *Operation Zero Yellow* to erase every yellow taxi from Kolkata by Dashami.
+- **Walk your para at every dawn** (top-down, retro 16-bit pixels) and talk to the cast in RPG dialogue boxes with portraits, typewriter text and talk-beeps: Bose-babu the malik, Hari-da the mustached mechanic (garage upgrades), Nitai the cha-wala (rumours and chai), Thakuma, the purohit at the para pandal, and Pintu, your rival who joins ZipCab.
+- **Choices matter:** forgive Pintu or call him a traitor (he may return on Dashami to ram the KING for you), and decide whether to buy Nitai's secret about the KING's blind spot. The ending changes with what you chose.
+- **Items:** ☕ bhaar cha (a quick-hands rush for the first stretch of the night), 🙏 Ma's blessing from the pandal (+1 heart), and 🍬 Thakuma's rosogolla tin (saves you once from being towed).
+- **Rooftop kite fights** are now on the para's rooftop ladder.
+- **👾 Retro 16-bit pixel mode** on by default (toggle in the menu).
+
 ## What's new in v2
 - **2.5D cinematic world:** stacked-slab 3D vehicles (a real Ambassador face: chrome bumpers, round headlights, blue stripe), GTA2-style leaning buildings with green shutters and Bengali shop signs, trees, street lamps, headlight cones, night-to-dawn lighting, vignette, an intro camera fly-in, and slow-motion on big hits.
 - **Learn Kolkata as you drive:** each night follows a real route past 4 landmarks (Shyambazar, Kumartuli, College Street, Esplanade, Victoria Memorial, Kalighat, **Howrah Bridge**: night 1 opens on it, crossing from Howrah into the city under the steel truss and towers, and it's also the menu backdrop, Babughat…). A fact card pops up for each one, a **minimap** tracks your route, and a **Kolkata map** screen collects everything you've found.

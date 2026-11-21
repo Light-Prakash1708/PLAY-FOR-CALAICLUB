@@ -13,6 +13,13 @@
 - Procedural Web Audio: dhak loop that speeds up toward dawn, horn "pyaan-pyaan", tram bell, moo, coins
 - Touch controls, pause (Esc/P/⏸), auto-pause on tab switch, challenge links (`?beat=&from=`)
 
+## RPG layer (v3)
+- **State `hub`** = the walkable para at each dawn. `enterHub(dawn)` (0 = night before Pujo), `updateHub`, `drawHub` (world layer), `drawHubUI` (HUD + dialogue).
+- **Places/NPCs:** `hubPois()` (positions), `HUB_WALLS()` (collision), `hubTalk(poi)` decides who says what.
+- **Dialogue:** `say(lines, done, skippable)` where a line is `L(who, text)` or `{who, text, choices:[{t, go, reply}]}`. Portraits come from `WHO` and are drawn by `drawPortrait`. Story text lives in `STORY`. Pintu's arc is in `pintuTalk`.
+- **Flags** (per run, in `G.flags`): `kind`, `pintuZip`, `pintuHelps` (boss starts at 2 HP), `intel` (easier boss rams), `tinGiven`. Items: `G.inv.tin`; next-night buffs: `G.buff.chai` and `G.buff.bless`. Endings are in `showEnd`.
+- **Retro mode:** the world is drawn into the half-resolution canvas `pcv` (ctx is swapped), then upscaled without smoothing in `blitRetro()`. Speech bubbles are deferred to the crisp layer through `BQ`.
+
 ## Responsive view (v2.1)
 `W` = 600 is the **world** width (the road is always centred). `VW` × `H` is the **visible** size, recomputed in `resize()`: wider on landscape screens (up to 1500), taller on portrait phones (up to 1350). `OX = (VW - W) / 2` is the world's x offset. World drawing happens inside `ctx.translate(OX, 0)`; the HUD, captions, touch buttons and kite header use screen coordinates (`VW`). On wide screens (`OX >= 140`) `drawMinimap` draws the big map and `drawRoutePanel` draws the right-hand panel. `CAM.x` follows the taxi for dynamic perspective.
 

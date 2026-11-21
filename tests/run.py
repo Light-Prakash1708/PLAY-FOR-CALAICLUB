@@ -3,6 +3,7 @@ from playwright.async_api import async_playwright
 import os
 URL = 'file://' + os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'index.html'))
 OUT = os.path.join(os.path.dirname(__file__), 'shots'); os.makedirs(OUT, exist_ok=True)
+DLG = "()=>{const P=__PNR; let n=0; while(P.G.dlg && n<60){ const d=P.G.dlg, l=d.lines[d.i]; d.c=l.text.length; if(l.choices) P.hub.pickChoice(0); else P.hub.dlgNext(); n++; } }"
 BOT = r"""
 (n) => {
   const P = window.__PNR, G = P.G, k = P.keys;
@@ -36,7 +37,11 @@ async def main():
         pg.on('pageerror', lambda e: errors.append('pageerror: '+str(e)))
         await pg.goto(URL); await pg.wait_for_timeout(800)
         await pg.screenshot(path=OUT+'/01_menu.png')
-        await pg.click('[data-a=play1]'); await pg.wait_for_timeout(300)
+        await pg.click('[data-a=play1]'); await pg.wait_for_timeout(1500)
+        await pg.screenshot(path=OUT+'/02_prologue.png')
+        await pg.keyboard.press('Escape'); await pg.wait_for_timeout(200)
+        await pg.keyboard.press('Space'); await pg.wait_for_timeout(600); await pg.keyboard.press('Space'); await pg.wait_for_timeout(100); await pg.keyboard.press('Space'); await pg.wait_for_timeout(300)
+        print('after taxi talk state', await pg.evaluate("()=>__PNR.G.state"))
         await pg.screenshot(path=OUT+'/02_intro.png')
         log=[]
         for night in range(5):
@@ -52,17 +57,26 @@ async def main():
             log.append(st)
             if st['s']=='dawn':
                 if night==0: await pg.screenshot(path=OUT+'/04_dawn.png')
+                await pg.click('[data-a=para]'); await pg.wait_for_timeout(1200)
+                if night==0: await pg.screenshot(path=OUT+'/04a_hub.png')
+                await pg.evaluate(DLG)
+                for poi in ['garage','chai','pandal','thakuma','pintu','malik']:
+                    await pg.evaluate("(id)=>{const P=__PNR; const q=P.hub.hubPois().find(p=>p.id===id); P.hub.hubTalk(q);}", poi)
+                    if night==1 and poi=='pintu': await pg.wait_for_timeout(900); await pg.screenshot(path=OUT+'/04c_choice.png')
+                    await pg.evaluate(DLG); await pg.wait_for_timeout(50)
+                    if await pg.query_selector('#overlay.on [data-a=hub]'):
+                        b2 = await pg.query_selector('[data-a=buy]:not([disabled])')
+                        if b2: await b2.click(); await pg.wait_for_timeout(100)
+                        await pg.click('[data-a=hub]')
                 if night in (0,3):
-                    await pg.click('[data-a=kite]'); await pg.wait_for_timeout(300)
+                    await pg.evaluate("()=>{const P=__PNR; P.hub.hubTalk(P.hub.hubPois().find(p=>p.id==='roof'));}"); await pg.evaluate(DLG); await pg.wait_for_timeout(300)
                     await pg.mouse.move(200,300); await pg.wait_for_timeout(300); await pg.mouse.move(450,350, steps=5); await pg.wait_for_timeout(300)
                     await pg.screenshot(path=OUT+f'/04b_kite{night}.png')
                     await pg.evaluate("()=>{ const K=__PNR.KITE; for(let i=0;i<60*26 && __PNR.G.state==='kite';i++){ K.mouse={x:300+Math.sin(i/9)*260,y:300+Math.cos(i/13)*150}; __PNR.step(1,1/60);} }")
                     await pg.wait_for_timeout(200)
                     print('after kite state', await pg.evaluate("()=>__PNR.G.state"), 'cuts', await pg.evaluate("()=>__PNR.KITE.cuts"))
-                for sel in ['[data-a=repair]','[data-a=buy][data-k=engine]']:
-                    el = await pg.query_selector(sel+':not([disabled])')
-                    if el: await el.click(); await pg.wait_for_timeout(100)
-                await pg.click('[data-a=nextNight]'); await pg.wait_for_timeout(200)
+                print('flags', await pg.evaluate("()=>JSON.stringify([__PNR.G.flags,__PNR.G.inv,__PNR.G.buff])"))
+                await pg.evaluate("()=>{const P=__PNR; P.G.dlg=null; P.hub.hubTalk(P.hub.hubPois().find(p=>p.id==='taxi'));}"); await pg.evaluate(DLG); await pg.wait_for_timeout(200)
             else:
                 break
         await pg.screenshot(path=OUT+'/05_end.png')
@@ -79,7 +93,7 @@ async def main():
         await pg.click('[data-a=menu]')
         # 2P
         await pg.click('[data-a=play2]');
-        for rnd in range(8):
+        for rnd in range(12):
             st = await pg.evaluate("()=>__PNR.G.state")
             if st!='intro': break
             await pg.click('[data-a=go]')
@@ -94,7 +108,7 @@ async def main():
             else: break
         # pause flow
         await pg.click('[data-a=menu]') if await pg.query_selector('[data-a=menu]') else None
-        await pg.click('[data-a=play1]'); await pg.click('[data-a=go]'); await pg.wait_for_timeout(300)
+        await pg.click('[data-a=play1]'); await pg.evaluate("()=>{const P=__PNR; P.G.dlg=null; P.hub.hubTalk(P.hub.hubPois().find(p=>p.id==='taxi'));}"); await pg.evaluate(DLG); await pg.click('[data-a=go]'); await pg.wait_for_timeout(300)
         await pg.keyboard.press('Escape'); await pg.wait_for_timeout(100)
         print('paused state', await pg.evaluate("()=>__PNR.G.state"))
         await pg.keyboard.press('Enter'); await pg.wait_for_timeout(100)
@@ -105,7 +119,7 @@ async def main():
         m.on('console', lambda x: errors.append('m console.'+x.type+': '+x.text) if x.type in ('error','warning') else None)
         await m.goto(URL+'?beat=1500&from=Sona'); await m.wait_for_timeout(500)
         await m.screenshot(path=OUT+'/09_mobile_menu.png')
-        await m.tap('[data-a=play1]'); await m.tap('[data-a=go]')
+        await m.tap('[data-a=play1]'); await m.wait_for_timeout(800); await m.screenshot(path=OUT+'/09b_mobile_hub.png'); await m.evaluate("()=>{const P=__PNR; P.G.dlg=null; P.hub.hubTalk(P.hub.hubPois().find(p=>p.id==='taxi'));}"); await m.evaluate(DLG); await m.tap('[data-a=go]')
         await m.touchscreen.tap(60, 790)
         await m.evaluate(BOT, 60*20); await m.wait_for_timeout(200)
         await m.screenshot(path=OUT+'/10_mobile_play.png')
