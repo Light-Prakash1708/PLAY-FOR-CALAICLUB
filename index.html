@@ -1,0 +1,1454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Pujo Night Rush — Save the Last Yellow Taxi</title>
+<meta name="description" content="A Kolkata Durga Puja taxi brawler. Steal fares, dodge trams, pay the malik by dawn. No sign-up, plays in your browser.">
+<meta name="theme-color" content="#1b1430">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%9A%95%3C/text%3E%3C/svg%3E">
+<style>
+  :root { --u: 1px; --yellow:#f7c531; --ink:#1b1430; --cream:#fff6e0; --red:#e8442e; --teal:#2ec4b6; --pink:#ff4d6d; --cyan:#3ec7ff; }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: #0e0a1c; touch-action: none; }
+  body { display: flex; align-items: center; justify-content: center; font-family: "Trebuchet MS", "Segoe UI", system-ui, sans-serif; color: var(--cream);
+    background: radial-gradient(ellipse at 50% 0%, #2c1d4f 0%, #0e0a1c 70%); }
+  #wrap { position: relative; overflow: hidden; border-radius: calc(var(--u) * 6); box-shadow: 0 0 60px rgba(247,197,49,.15); }
+  canvas { display: block; touch-action: none; }
+  #overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+  #overlay.on { pointer-events: auto; background: rgba(14,10,28,.72); backdrop-filter: blur(2px); }
+  .panel { width: calc(var(--u) * 540); max-height: calc(var(--u) * 870); overflow-y: auto; background: var(--cream); color: var(--ink);
+    border-radius: calc(var(--u) * 22); padding: calc(var(--u) * 26) calc(var(--u) * 26); box-shadow: 0 calc(var(--u)*8) 0 #c9932a, 0 calc(var(--u)*14) calc(var(--u)*30) rgba(0,0,0,.5);
+    font-size: calc(var(--u) * 18); text-align: center; animation: pop .25s ease-out; scrollbar-width: none; }
+  .panel::-webkit-scrollbar { display: none; }
+  @keyframes pop { from { transform: scale(.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .logo { font-size: calc(var(--u) * 54); font-weight: 900; line-height: .95; letter-spacing: calc(var(--u) * 1); color: var(--ink); text-shadow: calc(var(--u)*3) calc(var(--u)*3) 0 var(--yellow); }
+  .logo small { display: block; font-size: calc(var(--u) * 22); letter-spacing: calc(var(--u) * 4); color: var(--red); text-shadow: none; margin-top: calc(var(--u) * 6); }
+  .bn { font-size: calc(var(--u) * 22); color: #b5462e; margin: calc(var(--u) * 4) 0; }
+  h2 { font-size: calc(var(--u) * 34); font-weight: 900; margin-bottom: calc(var(--u) * 6); }
+  h3 { font-size: calc(var(--u) * 20); font-weight: 900; margin: calc(var(--u) * 14) 0 calc(var(--u) * 6); text-transform: uppercase; letter-spacing: calc(var(--u) * 1); color: #7a4b00; }
+  p { margin: calc(var(--u) * 6) 0; line-height: 1.35; }
+  .muted { opacity: .7; font-size: calc(var(--u) * 15); }
+  .btn { display: block; width: 100%; margin: calc(var(--u) * 10) 0 0; padding: calc(var(--u) * 14) calc(var(--u) * 10); font: inherit; font-weight: 900;
+    font-size: calc(var(--u) * 21); border: none; border-radius: calc(var(--u) * 14); cursor: pointer; color: var(--ink); background: var(--yellow);
+    box-shadow: 0 calc(var(--u) * 5) 0 #b8860b; transition: transform .06s; }
+  .btn:active { transform: translateY(calc(var(--u) * 4)); box-shadow: 0 calc(var(--u) * 1) 0 #b8860b; }
+  .btn.red { background: var(--red); color: #fff; box-shadow: 0 calc(var(--u) * 5) 0 #8f2516; }
+  .btn.teal { background: var(--teal); box-shadow: 0 calc(var(--u) * 5) 0 #1a7a70; }
+  .btn.ghost { background: #eadfc4; box-shadow: 0 calc(var(--u) * 5) 0 #b9a77c; font-size: calc(var(--u) * 17); }
+  .btn:disabled { opacity: .45; cursor: default; }
+  .row { display: flex; gap: calc(var(--u) * 10); }
+  .row .btn { flex: 1; }
+  .banner { background: var(--ink); color: var(--yellow); border-radius: calc(var(--u) * 12); padding: calc(var(--u) * 8) calc(var(--u) * 12); margin: calc(var(--u) * 10) 0; font-weight: 700; font-size: calc(var(--u) * 16); }
+  .big { font-size: calc(var(--u) * 40); font-weight: 900; }
+  .ok { color: #1f8a3b; } .bad { color: #c62e1a; }
+  .cards { display: grid; grid-template-columns: 1fr 1fr; gap: calc(var(--u) * 8); margin-top: calc(var(--u) * 6); text-align: left; }
+  .card { background: #fff; border-radius: calc(var(--u) * 12); padding: calc(var(--u) * 10); font-size: calc(var(--u) * 14); line-height: 1.3; border: calc(var(--u) * 2) solid #f0d38a; }
+  .card b { display: block; font-size: calc(var(--u) * 15); margin-bottom: calc(var(--u) * 3); }
+  .card .em { font-size: calc(var(--u) * 26); float: right; margin-left: calc(var(--u) * 4); }
+  .card.locked { opacity: .45; border-style: dashed; }
+  .shop { display: grid; grid-template-columns: 1fr 1fr; gap: calc(var(--u) * 8); }
+  .shop .btn { font-size: calc(var(--u) * 15); padding: calc(var(--u) * 10) calc(var(--u) * 6); margin-top: calc(var(--u) * 4); }
+  .keys { display: grid; grid-template-columns: 1fr 1fr; gap: calc(var(--u) * 8); text-align: left; font-size: calc(var(--u) * 15); margin-top: calc(var(--u) * 6); }
+  .keys div { background: #fff; border-radius: calc(var(--u) * 10); padding: calc(var(--u) * 8); }
+  kbd { display: inline-block; background: var(--ink); color: var(--yellow); border-radius: calc(var(--u) * 5); padding: 0 calc(var(--u) * 6); font-family: inherit; font-weight: 700; font-size: calc(var(--u) * 14); }
+  .paint { display: flex; align-items: center; justify-content: space-between; background: #fff; border-radius: calc(var(--u) * 12); padding: calc(var(--u) * 6) calc(var(--u) * 8); margin-top: calc(var(--u) * 10); font-size: calc(var(--u) * 16); }
+  .paint button { font: inherit; font-weight: 900; font-size: calc(var(--u) * 22); width: calc(var(--u) * 40); height: calc(var(--u) * 40); border: none; border-radius: calc(var(--u) * 10); background: var(--yellow); cursor: pointer; }
+  .swatch { display: inline-block; width: calc(var(--u) * 18); height: calc(var(--u) * 18); border-radius: calc(var(--u) * 4); vertical-align: middle; margin-right: calc(var(--u) * 6); border: calc(var(--u) * 2) solid var(--ink); }
+  input.name { font: inherit; font-size: calc(var(--u) * 18); width: 100%; padding: calc(var(--u) * 10); border-radius: calc(var(--u) * 10); border: calc(var(--u) * 2) solid #c9932a; margin-top: calc(var(--u) * 8); text-align: center; }
+  .tiny { font-size: calc(var(--u) * 13); opacity: .65; margin-top: calc(var(--u) * 10); }
+  .vs { display: flex; justify-content: space-around; align-items: center; font-weight: 900; font-size: calc(var(--u) * 28); margin: calc(var(--u) * 10) 0; }
+  .p1 { color: #d6284a; } .p2 { color: #1188c4; }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <canvas id="game"></canvas>
+  <div id="overlay"></div>
+</div>
+<script>
+/* =====================================================================
+   PUJO NIGHT RUSH — Save the Last Yellow Taxi
+   Single-file HTML5 Canvas game. No build step, no libraries, no sign-in.
+
+   Engine patterns ported from our earlier games:
+     - Fixed-step-clamped game loop, scrolling spawner, particles,
+       screen shake, Web Audio SFX, LocalStorage save   (Sky Strike)
+     - Single-file structure + "Storybook Flat" art style + chapter flow (Sporulation)
+     - Wave/intensity ramp per level, boss behaviour states (Xenos Breach / Alien Purge)
+   See CONTINUE.md for the code map.
+   ===================================================================== */
+'use strict';
+(() => {
+
+// ---------------------------------------------------------------- constants
+const W = 600, H = 900, HUD_H = 64;
+const ROAD_L = 95, ROAD_R = 505, LANE_W = (ROAD_R - ROAD_L) / 4;
+const laneX = i => ROAD_L + LANE_W * (i + 0.5);
+const CURB_X = [74, 526];
+const EDGE_LANE = [0, 3];
+const TRAM_LANE = 1;
+const rand = (a, b) => a + Math.random() * (b - a);
+const randi = (a, b) => Math.floor(rand(a, b + 1));
+const pick = a => a[Math.floor(Math.random() * a.length)];
+const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
+const lerp = (a, b, t) => a + (b - a) * t;
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+// ---------------------------------------------------------------- content
+const NIGHTS = [
+  { name: 'Panchami', bn: 'পঞ্চমী', rent: 200, scroll: 250, traffic: 1.8, bus: 12, rick: 6, tram: 13, cow: 9, pot: 6, crowd: 0, zip: 10, pass: 2.5,
+    tip: 'Pick up people waving at the curb. Drive into YOUR glowing pandal gate to drop them.' },
+  { name: 'Saptami', bn: 'সপ্তমী', rent: 350, scroll: 280, traffic: 1.5, bus: 10, rick: 5.5, tram: 12, cow: 8, pot: 5, crowd: 14, zip: 7, pass: 2.4,
+    tip: 'ZipCabs overtake you to snatch fares. Honk to shove them out of the way!' },
+  { name: 'Ashtami', bn: 'অষ্টমী', rent: 500, scroll: 305, traffic: 1.35, bus: 9, rick: 5, tram: 11, cow: 7, pot: 4.5, crowd: 11, zip: 6, pass: 2.3,
+    tip: 'FRAGILE fares (idols, cakes) pay 2.5×. One crash and you lose it all.' },
+  { name: 'Navami', bn: 'নবমী', rent: 600, scroll: 330, traffic: 1.2, bus: 8, rick: 4.5, tram: 10, cow: 6.5, pot: 4, crowd: 9, zip: 5, pass: 2.2,
+    tip: 'Pandal crowds slow you down and annoy passengers. Pick your lane.' },
+  { name: 'Dashami', bn: 'দশমী', rent: 750, scroll: 350, traffic: 1.2, bus: 8, rick: 4.5, tram: 10, cow: 6, pot: 4, crowd: 9, zip: 6, pass: 2.1, boss: true,
+    tip: 'The ZipCab KING is hunting you. Ram him from the side 3 times to chase him off!' },
+];
+const SHOWDOWN = { name: 'Showdown', bn: 'লড়াই', scroll: 290, traffic: 1.6, bus: 10, rick: 6, tram: 12, cow: 8, pot: 5, crowd: 12, zip: 7, pass: 1.7, len: 60 };
+const NIGHT_LEN = 75;
+
+const CHARS = [
+  { id: 'thakuma', name: 'Thakuma', emoji: '👵', type: 'granny', bubble: 'Taxi! Aste chalabe!', color: '#c0392b', story: 'Going to see the Bagbazar idol. I have not missed one since 1961.', min: 0 },
+  { id: 'student', name: 'College Street Student', emoji: '🎓', type: 'normal', bubble: 'Taxi!', color: '#2e86de', story: 'If I reach the Coffee House late, the adda starts without me. Again.', min: 0 },
+  { id: 'phuchka', name: 'Phuchka-wala', emoji: '🥟', type: 'normal', bubble: 'Dada, cholo!', color: '#e67e22', story: 'Two thousand phuchkas tonight. My feet have officially retired.', min: 0 },
+  { id: 'dhaaki', name: 'The Dhaaki', emoji: '🥁', type: 'normal', bubble: 'Taxi! Taxi!', color: '#8e44ad', story: 'My dhak is the heartbeat of this para. Faster, dada, the aarti waits for no one.', min: 0 },
+  { id: 'romeo', name: 'Nervous Boy', emoji: '🌹', type: 'rush', bubble: 'Quick! Please!', color: '#e84393', story: 'She said Maddox Square at nine. It is 8:58. Drive like the wind!', min: 0 },
+  { id: 'nurse', name: 'Night-shift Nurse', emoji: '🩺', type: 'normal', bubble: 'Taxi!', color: '#16a085', story: 'Twelve hours on my feet. Just get me home before the Sandhi Puja.', min: 0 },
+  { id: 'tourist', name: 'Tourist from Delhi', emoji: '🧳', type: 'normal', bubble: 'Bhaiya, taxi?', color: '#f39c12', story: 'Which pandal is the best one? ...All of them? Then take me to all of them.', min: 0 },
+  { id: 'howrah', name: 'Howrah Uncle', emoji: '🚆', type: 'howrah', bubble: 'Dada, Howrah jaben?', color: '#6d4c41', story: 'Last train to Bardhaman. The whole family is waiting with luchi and alur dom.', min: 1 },
+  { id: 'biryani', name: 'Biryani Hunter', emoji: '🍛', type: 'normal', bubble: 'Taxi!', color: '#d35400', story: 'Is there a potato in it? There MUST be a potato in it.', min: 1 },
+  { id: 'tramdriver', name: 'Retired Tram Driver', emoji: '🚋', type: 'normal', bubble: 'Ei taxi!', color: '#34495e', story: 'I drove the old tram for thirty years. You drive well, young one.', min: 1 },
+  { id: 'artisan', name: 'Kumartuli Artisan', emoji: '🎨', type: 'fragile', bubble: 'Gently, dada!', color: '#a1887f', cargo: 'IDOL', story: 'Ma’s face took me forty nights. One bump and it all cracks. Please.', min: 2 },
+  { id: 'cake', name: 'Bride’s Brother', emoji: '🎂', type: 'fragile', bubble: 'Careful! Cake!', color: '#ff7675', cargo: 'CAKE', story: 'This cake survived two floods and an uncle. Do not be the third disaster.', min: 2 },
+  { id: 'captain', name: 'Para Football Captain', emoji: '⚽', type: 'normal', bubble: 'Taxi!', color: '#27ae60', story: 'Mohun Bagan or East Bengal? Choose carefully, dada. Your tip depends on it.', min: 2 },
+  { id: 'mother', name: 'Mother & Daughter', emoji: '🦁', type: 'normal', bubble: 'Taxi please!', color: '#fd79a8', story: 'She wants to see the lion at the pandal. For the fifth time tonight.', min: 3 },
+  { id: 'harida', name: 'Hari-da', emoji: '🚕', type: 'normal', bubble: 'Oi, bhai!', color: '#f1c40f', story: 'They scrapped my Ambassador last year. Keep yours running, bhai. For all of us.', min: 4 },
+];
+const TYPE = {
+  normal: { mult: 1, ride: [5, 8], extra: 12, label: '' },
+  granny: { mult: 1.25, ride: [5, 8], extra: 13, label: 'NO BUMPS!' },
+  rush:   { mult: 1.5, ride: [4, 6], extra: 8, label: 'RUSH!' },
+  howrah: { mult: 2, ride: [11, 13], extra: 13, label: 'HOWRAH ×2' },
+  fragile:{ mult: 2.5, ride: [6, 8], extra: 13, label: 'FRAGILE' },
+};
+const PAINTS = [
+  { name: 'Classic Yellow', body: '#f7c531', dark: '#c99a14', stripe: null, rank: 0 },
+  { name: 'No-Refusal Stripe', body: '#f7c531', dark: '#c99a14', stripe: '#2b5fd9', rank: 1 },
+  { name: 'Pujo Red', body: '#e8442e', dark: '#a32b1b', stripe: '#f7c531', rank: 2 },
+  { name: 'Alpana White', body: '#f4efe4', dark: '#c8bfae', stripe: '#d63031', rank: 3 },
+  { name: 'Gold Ambassador', body: '#e3b341', dark: '#8a6400', stripe: '#2d1b00', rank: 4 },
+];
+const RANKS = [
+  { xp: 0, name: 'New Driver' }, { xp: 120, name: 'Para Regular' }, { xp: 350, name: 'Pujo Pro' },
+  { xp: 750, name: 'Howrah Hero' }, { xp: 1400, name: 'Legend of the Meter' },
+];
+const UPGRADES = {
+  engine: { name: 'Engine', icon: '⚙️', desc: 'faster steering', cost: [150, 300], max: 2 },
+  bumper: { name: 'Bumper', icon: '🛡️', desc: 'less damage, harder rams', cost: [150, 300], max: 2 },
+  horn:   { name: 'Horn', icon: '📯', desc: 'shorter cooldown', cost: [100, 200], max: 2 },
+};
+const P_COLORS = ['#ff4d6d', '#3ec7ff'];
+
+// ---------------------------------------------------------------- save (LocalStorage, no sign-in)
+const SAVE_KEY = 'pujoNightRush_v1';
+let S = { xp: 0, paint: 0, journal: {}, best: 0, plays: 0, muted: false };
+try { const raw = localStorage.getItem(SAVE_KEY); if (raw) S = Object.assign(S, JSON.parse(raw) || {}); } catch (e) { /* storage blocked: play without saving */ }
+if (!S.journal || typeof S.journal !== 'object') S.journal = {};
+function save() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(S)); } catch (e) { /* ignore */ } }
+function rankIndex(xp) { let r = 0; RANKS.forEach((k, i) => { if (xp >= k.xp) r = i; }); return r; }
+
+// challenge link (?beat=1234&from=Name)
+const CHALLENGE = (() => {
+  try {
+    const q = new URLSearchParams(location.search);
+    const beat = parseInt(q.get('beat'), 10);
+    if (!isFinite(beat) || beat <= 0) return null;
+    const from = (q.get('from') || 'A friend').replace(/[^\p{L}\p{N} ._-]/gu, '').slice(0, 20) || 'A friend';
+    return { beat: Math.min(beat, 999999), from };
+  } catch (e) { return null; }
+})();
+
+// ---------------------------------------------------------------- canvas
+const cvs = document.getElementById('game');
+const ctx = cvs.getContext('2d');
+const wrap = document.getElementById('wrap');
+const overlay = document.getElementById('overlay');
+let scale = 1;
+function resize() {
+  const vw = window.innerWidth, vh = window.innerHeight;
+  scale = Math.min(vw / W, vh / H);
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const cw = Math.floor(W * scale), ch = Math.floor(H * scale);
+  wrap.style.width = cw + 'px'; wrap.style.height = ch + 'px';
+  wrap.style.setProperty('--u', scale + 'px');
+  cvs.width = Math.max(1, Math.floor(cw * dpr)); cvs.height = Math.max(1, Math.floor(ch * dpr));
+  cvs.style.width = cw + 'px'; cvs.style.height = ch + 'px';
+}
+window.addEventListener('resize', resize);
+resize();
+
+// ---------------------------------------------------------------- audio (Web Audio, all procedural)
+const AU = { ctx: null, master: null, noise: null, next: 0, step: 0, timer: null };
+// Optional recorded voice lines. Drop mp3s in /audio and list them here, e.g. jaben: 'audio/jaben.mp3'
+const VOICE_FILES = {};
+const VOICE = {};
+Object.keys(VOICE_FILES).forEach(k => { try { const a = new Audio(VOICE_FILES[k]); a.preload = 'auto'; VOICE[k] = a; } catch (e) { /* ignore */ } });
+function voice(k) { const a = VOICE[k]; if (!a || S.muted) return; try { a.currentTime = 0; const p = a.play(); if (p && p.catch) p.catch(() => {}); } catch (e) { /* ignore */ } }
+
+function audioInit() {
+  try {
+    if (AU.ctx) { if (AU.ctx.state === 'suspended') AU.ctx.resume(); return; }
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    AU.ctx = new AC();
+    AU.master = AU.ctx.createGain();
+    AU.master.gain.value = S.muted ? 0 : 0.6;
+    AU.master.connect(AU.ctx.destination);
+    const len = AU.ctx.sampleRate;
+    const buf = AU.ctx.createBuffer(1, len, AU.ctx.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+    AU.noise = buf;
+    AU.timer = setInterval(scheduleDhak, 25);
+  } catch (e) { AU.ctx = null; }
+}
+function setMuted(m) { S.muted = m; save(); if (AU.master) AU.master.gain.value = m ? 0 : 0.6; }
+function tone(freq, dur, type = 'sine', vol = 0.2, at = 0, f2 = 0) {
+  if (!AU.ctx) return;
+  const t0 = at || AU.ctx.currentTime;
+  const o = AU.ctx.createOscillator(), g = AU.ctx.createGain();
+  o.type = type; o.frequency.setValueAtTime(freq, t0);
+  if (f2) o.frequency.exponentialRampToValueAtTime(f2, t0 + dur);
+  g.gain.setValueAtTime(vol, t0); g.gain.exponentialRampToValueAtTime(0.0008, t0 + dur);
+  o.connect(g); g.connect(AU.master); o.start(t0); o.stop(t0 + dur + 0.03);
+}
+function noise(dur, vol = 0.2, at = 0, freq = 1200, ftype = 'lowpass') {
+  if (!AU.ctx || !AU.noise) return;
+  const t0 = at || AU.ctx.currentTime;
+  const s = AU.ctx.createBufferSource(); s.buffer = AU.noise;
+  const f = AU.ctx.createBiquadFilter(); f.type = ftype; f.frequency.value = freq;
+  const g = AU.ctx.createGain(); g.gain.setValueAtTime(vol, t0); g.gain.exponentialRampToValueAtTime(0.0008, t0 + dur);
+  s.connect(f); f.connect(g); g.connect(AU.master); s.start(t0, Math.random() * 0.5); s.stop(t0 + dur + 0.03);
+}
+const SFX = {
+  horn() { tone(392, 0.15, 'sawtooth', 0.09); tone(494, 0.15, 'sawtooth', 0.07);
+    if (AU.ctx) { const t = AU.ctx.currentTime + 0.19; tone(392, 0.2, 'sawtooth', 0.09, t); tone(494, 0.2, 'sawtooth', 0.07, t); } },
+  crash() { noise(0.35, 0.35, 0, 900); tone(90, 0.25, 'sine', 0.3, 0, 40); },
+  bump() { tone(120, 0.12, 'sine', 0.25, 0, 60); noise(0.08, 0.15, 0, 600); },
+  coin() { if (!AU.ctx) return; const t = AU.ctx.currentTime; tone(880, 0.08, 'square', 0.06, t); tone(1320, 0.18, 'square', 0.06, t + 0.07); },
+  pickup() { if (!AU.ctx) return; const t = AU.ctx.currentTime; [523, 659, 784].forEach((f, i) => tone(f, 0.1, 'triangle', 0.12, t + i * 0.06)); },
+  steal() { if (!AU.ctx) return; const t = AU.ctx.currentTime; tone(700, 0.12, 'square', 0.08, t, 350); tone(300, 0.25, 'square', 0.07, t + 0.1, 150); },
+  lost() { tone(330, 0.4, 'triangle', 0.15, 0, 140); },
+  bell() { if (!AU.ctx) return; const t = AU.ctx.currentTime; tone(1760, 0.25, 'triangle', 0.08, t); tone(1760, 0.3, 'triangle', 0.08, t + 0.18); },
+  moo() { tone(150, 0.6, 'sawtooth', 0.06, 0, 105); },
+  strike() { tone(110, 0.6, 'square', 0.12, 0, 70); },
+  win() { if (!AU.ctx) return; const t = AU.ctx.currentTime; [523, 659, 784, 1047].forEach((f, i) => tone(f, 0.25, 'triangle', 0.14, t + i * 0.12)); },
+  click() { tone(660, 0.05, 'square', 0.05); },
+};
+// Dhak drum loop. Tempo climbs as dawn approaches: you feel the deadline.
+const DHAK = [2, 0, 1, 0, 1, 0, 2, 0, 2, 0, 1, 1, 0, 1, 2, 0];
+function drum(at, f, vol) { tone(f, 0.28, 'sine', vol, at, f * 0.55); noise(0.05, vol * 0.35, at, 1100, 'bandpass'); }
+function kashor(at, vol) { tone(2400, 0.05, 'square', vol * 0.25, at); tone(3150, 0.07, 'triangle', vol * 0.3, at); }
+function scheduleDhak() {
+  if (!AU.ctx || S.muted) return;
+  const playing = G.state === 'play', menu = G.state === 'menu';
+  if (!playing && !menu) { AU.next = 0; return; }
+  const prog = playing ? clamp(G.t / G.len, 0, 1) : 0;
+  const bpm = playing ? 100 + 80 * prog : 84;
+  const stepDur = 60 / bpm / 4;
+  const now = AU.ctx.currentTime;
+  if (AU.next < now) AU.next = now + 0.05;
+  while (AU.next < now + 0.12) {
+    const s = DHAK[AU.step % 16];
+    const vol = menu ? 0.22 : 0.42;
+    if (s === 2) drum(AU.next, 92, vol);
+    else if (s === 1) drum(AU.next, 175, vol * 0.6);
+    if (playing && prog > 0.45 && AU.step % 2 === 1) kashor(AU.next, 0.3 + prog * 0.3);
+    AU.step++; AU.next += stepDur;
+  }
+}
+
+// ---------------------------------------------------------------- input
+const keys = {};
+const P1KEYS = { l: ['KeyA'], r: ['KeyD'], u: ['KeyW'], d: ['KeyS'], h: ['Space', 'KeyF'] };
+const P2KEYS = { l: ['ArrowLeft'], r: ['ArrowRight'], u: ['ArrowUp'], d: ['ArrowDown'], h: ['Enter', 'NumpadEnter', 'ShiftRight', 'Slash'] };
+window.addEventListener('keydown', e => {
+  if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
+  if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) e.preventDefault();
+  if (e.repeat) { keys[e.code] = true; return; }
+  keys[e.code] = true;
+  audioInit();
+  if (overlay.classList.contains('on')) {
+    if (e.code === 'Enter' || e.code === 'NumpadEnter' || (e.code === 'Space' && G.state !== 'play')) {
+      const b = overlay.querySelector('[data-primary]');
+      if (b && !b.disabled) { e.preventDefault(); b.click(); }
+    } else if (e.code === 'Escape' && G.state === 'paused') resume();
+    return;
+  }
+  if (G.state === 'play' && (e.code === 'Escape' || e.code === 'KeyP')) pause();
+  if (e.code === 'KeyM') setMuted(!S.muted);
+});
+window.addEventListener('keyup', e => { keys[e.code] = false; });
+window.addEventListener('blur', () => { for (const k in keys) keys[k] = false; if (G.state === 'play') pause(); });
+document.addEventListener('visibilitychange', () => { if (document.hidden && G.state === 'play') pause(); });
+
+// touch / mouse buttons drawn on canvas
+const pointers = new Map();
+let touchMode = false;
+try { touchMode = window.matchMedia('(pointer: coarse)').matches; } catch (e) { touchMode = false; }
+function toLogical(e) { const r = cvs.getBoundingClientRect(); return { x: (e.clientX - r.left) / r.width * W, y: (e.clientY - r.top) / r.height * H }; }
+const PAUSE_BTN = { x: W - 52, y: HUD_H + 10, w: 42, h: 42 };
+const inRect = (p, b) => p.x >= b.x && p.x <= b.x + b.w && p.y >= b.y && p.y <= b.y + b.h;
+cvs.addEventListener('pointerdown', e => {
+  audioInit();
+  if (e.pointerType === 'touch' || e.pointerType === 'pen') touchMode = true;
+  const p = toLogical(e);
+  if (G.state === 'play' && inRect(p, PAUSE_BTN)) { pause(); e.preventDefault(); return; }
+  pointers.set(e.pointerId, p);
+  try { cvs.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
+  e.preventDefault();
+}, { passive: false });
+cvs.addEventListener('pointermove', e => { if (pointers.has(e.pointerId)) pointers.set(e.pointerId, toLogical(e)); });
+const endPtr = e => { pointers.delete(e.pointerId); };
+cvs.addEventListener('pointerup', endPtr); cvs.addEventListener('pointercancel', endPtr); cvs.addEventListener('lostpointercapture', endPtr);
+
+function touchButtons() {
+  const s = 84, y = H - s - 18;
+  if (G.mode === '2p') {
+    return [
+      { id: 0, act: 'l', x: 12, y, w: 74, h: s, label: '◀' }, { id: 0, act: 'r', x: 92, y, w: 74, h: s, label: '▶' }, { id: 0, act: 'h', x: 172, y, w: 74, h: s, label: 'HONK' },
+      { id: 1, act: 'l', x: W - 246, y, w: 74, h: s, label: '◀' }, { id: 1, act: 'r', x: W - 166, y, w: 74, h: s, label: '▶' }, { id: 1, act: 'h', x: W - 86, y, w: 74, h: s, label: 'HONK' },
+    ];
+  }
+  return [
+    { id: 0, act: 'l', x: 14, y, w: s, h: s, label: '◀' }, { id: 0, act: 'r', x: 14 + s + 10, y, w: s, h: s, label: '▶' },
+    { id: 0, act: 'u', x: W - 2 * s - 24, y, w: s, h: s, label: 'BOOST' }, { id: 0, act: 'h', x: W - s - 14, y, w: s, h: s, label: 'HONK' },
+  ];
+}
+function touchInput(idx) {
+  const out = { ix: 0, iy: 0, horn: false };
+  if (!touchMode || pointers.size === 0) return out;
+  const btns = touchButtons();
+  for (const p of pointers.values()) {
+    for (const b of btns) {
+      if (b.id !== idx) continue;
+      if (inRect(p, { x: b.x - 6, y: b.y - 10, w: b.w + 12, h: b.h + 20 })) {
+        if (b.act === 'l') out.ix -= 1; else if (b.act === 'r') out.ix += 1; else if (b.act === 'u') out.iy -= 1; else if (b.act === 'h') out.horn = true;
+      }
+    }
+  }
+  return out;
+}
+function readInput(t) {
+  let ix = 0, iy = 0, horn = false;
+  const sets = G.mode === '2p' ? [t.idx === 0 ? P1KEYS : P2KEYS] : [P1KEYS, P2KEYS];
+  for (const k of sets) {
+    if (k.l.some(c => keys[c])) ix -= 1;
+    if (k.r.some(c => keys[c])) ix += 1;
+    if (k.u.some(c => keys[c])) iy -= 1;
+    if (k.d.some(c => keys[c])) iy += 1;
+    if (k.h.some(c => keys[c])) horn = true;
+  }
+  const ti = touchInput(t.idx);
+  ix += ti.ix; iy += ti.iy; horn = horn || ti.horn;
+  return { ix: clamp(ix, -1, 1), iy: clamp(iy, -1, 1), horn };
+}
+
+// ---------------------------------------------------------------- game state
+const G = {
+  state: 'menu', mode: '1p', night: 0, t: 0, len: NIGHT_LEN, cfg: NIGHTS[0], bgY: 0,
+  taxis: [], objs: [], waiting: [], zones: [], parts: [], floats: [], sp: {}, boss: null, bossDone: false,
+  strikes: 0, up: { engine: 0, bumper: 0, horn: 0 }, totalEarned: 0, nightStories: [], newCards: 0, shake: 0,
+  wins: [0, 0], round: 1, lastResult: null, xpGained: 0,
+};
+
+function makeTaxi(idx, paint) {
+  const x = G.mode === '2p' ? laneX(idx === 0 ? 1 : 2) : (ROAD_L + ROAD_R) / 2;
+  return { idx, x, y: H - 190, vx: 0, vy: 0, hp: 100, pass: null, wallet: 0, earned: 0, hornCd: 0, hornHeld: false, hornFx: 0,
+    stun: 0, inv: 0, stall: 0, stealCd: 0, paint, homeY: H - 190, tilt: 0, inCrowd: false, deliveries: 0 };
+}
+
+function resetWorld() {
+  G.objs = []; G.waiting = []; G.zones = []; G.parts = []; G.floats = []; G.boss = null; G.bossDone = false; G.t = 0; G.shake = 0;
+  G.sp = { traffic: 1, bus: 4, rick: 2, tram: 5, cow: 3, pot: 2, crowd: 6, zip: 5, pass: 0.4 };
+}
+
+function startStory() {
+  G.mode = '1p'; G.night = 0; G.strikes = 0; G.up = { engine: 0, bumper: 0, horn: 0 }; G.totalEarned = 0; G.xpGained = 0; G.newCards = 0;
+  const unlocked = rankIndex(S.xp);
+  const paint = PAINTS[Math.min(S.paint, unlocked)] || PAINTS[0];
+  G.taxis = [makeTaxi(0, paint)];
+  S.plays++; save();
+  showIntro();
+}
+function startShowdown() {
+  G.mode = '2p'; G.wins = [0, 0]; G.round = 1; G.xpGained = 0;
+  const unlocked = rankIndex(S.xp);
+  G.taxis = [makeTaxi(0, PAINTS[Math.min(S.paint, unlocked)] || PAINTS[0]), makeTaxi(1, PAINTS[1])];
+  S.plays++; save();
+  showIntro();
+}
+function beginPlay() {
+  resetWorld();
+  if (G.mode === '1p') { G.cfg = NIGHTS[G.night]; G.len = NIGHT_LEN; }
+  else { G.cfg = SHOWDOWN; G.len = SHOWDOWN.len; }
+  G.nightStories = [];
+  G.taxis.forEach((t, i) => {
+    t.x = G.mode === '2p' ? laneX(i === 0 ? 1 : 2) : (ROAD_L + ROAD_R) / 2;
+    t.y = t.homeY; t.vx = 0; t.vy = 0; t.pass = null; t.stall = 0; t.stun = 0; t.inv = 1.2; t.hornCd = 0; t.nightEarned = 0;
+    if (G.mode === '2p') { t.hp = 100; t.wallet = 0; }
+  });
+  G.state = 'play';
+  hideOverlay();
+  addFloat(W / 2, H / 2 - 60, G.mode === '1p' ? G.cfg.name.toUpperCase() + ' NIGHT' : 'ROUND ' + G.round, '#f7c531', 34, 1.6);
+}
+
+// ---------------------------------------------------------------- spawning
+function laneFree(lane, top = 170) {
+  const lx = laneX(lane);
+  for (const o of G.objs) {
+    if (o.flat) continue;
+    if (Math.abs(o.x - lx) < LANE_W * 0.75 && o.y - o.h / 2 < top) return false;
+  }
+  return true;
+}
+function freeLane(lanes, top) {
+  const opts = lanes.filter(l => laneFree(l, top));
+  return opts.length ? pick(opts) : -1;
+}
+const CAR_COLORS = ['#ecf0f1', '#c0392b', '#7f8c8d', '#27ae60', '#2c3e50', '#8e44ad', '#d35400'];
+function spawn(kind) {
+  const c = G.cfg;
+  let lane, o;
+  switch (kind) {
+    case 'traffic':
+      lane = freeLane([0, 1, 2, 3].filter(l => !(l === TRAM_LANE && G.objs.some(q => q.kind === 'tram'))));
+      if (lane < 0) return;
+      o = { kind: 'car', lane, x: laneX(lane), y: -60, w: 36, h: 62, own: rand(0.4, 0.55), dmg: 12, color: pick(CAR_COLORS) };
+      break;
+    case 'bus':
+      lane = freeLane([0, 2, 3], 240); if (lane < 0) return;
+      o = { kind: 'bus', lane, x: laneX(lane), y: -90, w: 52, h: 132, own: 0.42, dmg: 18, color: pick(['#e94f37', '#2a9d8f', '#3d5a80', '#f4a261']),
+        bubble: Math.random() < 0.6 ? pick(['Aste ladies, kole bachha!', 'Esplanade! Esplanade!', 'Pichhone egiye jan!']) : null, bubbleT: 3 };
+      break;
+    case 'rick':
+      lane = freeLane([0, 3, 0, 3, 2]); if (lane < 0) return;
+      o = { kind: 'rick', lane, x: laneX(lane) + rand(-12, 12), y: -50, w: 34, h: 64, own: 0.18, dmg: 8 };
+      break;
+    case 'tram':
+      if (!laneFree(TRAM_LANE, 320) || G.objs.some(q => q.kind === 'tram')) return;
+      lane = TRAM_LANE;
+      o = { kind: 'tram', lane, x: laneX(lane), y: -120, w: 58, h: 200, own: 0.35, dmg: 22 };
+      SFX.bell();
+      break;
+    case 'cow':
+      lane = freeLane([0, 1, 2, 3]); if (lane < 0) return;
+      o = { kind: 'cow', lane, x: laneX(lane) + rand(-15, 15), y: -40, w: 46, h: 40, own: 0, dmg: 10, wander: rand(-12, 12), bubbleT: 0 };
+      break;
+    case 'pot':
+      lane = randi(0, 3);
+      o = { kind: 'pot', lane, x: laneX(lane) + rand(-20, 20), y: -30, w: 46, h: 30, own: 0, flat: true, hit: new Set() };
+      break;
+    case 'crowd': {
+      const side = randi(0, 1);
+      lane = EDGE_LANE[side];
+      const w = LANE_W * 1.25, x = side === 0 ? ROAD_L + w / 2 : ROAD_R - w / 2;
+      const people = [];
+      for (let i = 0; i < 26; i++) people.push({ dx: rand(-w / 2 + 8, w / 2 - 8), dy: rand(-50, 50), c: pick(['#e74c3c', '#f1c40f', '#9b59b6', '#3498db', '#e67e22', '#1abc9c', '#fd79a8', '#fff']), ph: rand(0, 6) });
+      o = { kind: 'crowd', lane, x, y: -70, w, h: 120, own: 0, flat: true, people, side };
+      break;
+    }
+    case 'zip': {
+      lane = randi(0, 3);
+      if (G.objs.some(q => q.kind !== 'pot' && q.kind !== 'crowd' && Math.abs(q.x - laneX(lane)) < 50 && q.y > H - 100)) return;
+      o = { kind: 'zip', lane, x: laneX(lane), y: H + 70, w: 36, h: 62, own: rand(1.18, 1.3), dmg: 8, target: null, vx: 0 };
+      break;
+    }
+    case 'pass': {
+      const side = randi(0, 1);
+      const pool = CHARS.filter(ch => G.mode === '2p' ? ch.min <= 2 : ch.min <= G.night);
+      const ch = pick(pool);
+      G.waiting.push({ x: CURB_X[side], y: -30, side, ch, ph: rand(0, 6), state: null });
+      return;
+    }
+  }
+  if (o) { o.vx = o.vx || 0; o.dy = 0; o.t = 0; G.objs.push(o); }
+}
+function runSpawners(dt) {
+  const c = G.cfg, prog = G.t / G.len;
+  const ramp = 1 - 0.25 * prog;
+  for (const k of ['traffic', 'bus', 'rick', 'tram', 'cow', 'pot', 'crowd', 'zip', 'pass']) {
+    const base = c[k];
+    if (!base) continue;
+    G.sp[k] -= dt;
+    if (G.sp[k] <= 0) {
+      spawn(k);
+      G.sp[k] = base * rand(0.7, 1.3) * (k === 'pass' ? 1 : ramp);
+    }
+  }
+}
+
+// ---------------------------------------------------------------- effects
+function addFloat(x, y, text, color = '#fff', size = 22, life = 1.2) { G.floats.push({ x, y, text, color, size, life, max: life }); }
+function burst(x, y, n, colors, spd = 220, size = 4, life = 0.7, kind = 'dot') {
+  for (let i = 0; i < n; i++) {
+    const a = rand(0, Math.PI * 2), s = rand(spd * 0.3, spd);
+    G.parts.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, life: rand(life * 0.6, life), max: life, c: pick(colors), size: rand(size * 0.6, size), kind, rot: rand(0, 6), vr: rand(-8, 8) });
+  }
+}
+function smoke(x, y) { G.parts.push({ x, y, vx: rand(-20, 20), vy: rand(-60, -20), life: 0.9, max: 0.9, c: '#555', size: rand(6, 11), kind: 'smoke', rot: 0, vr: 0 }); }
+
+// ---------------------------------------------------------------- passengers & fares
+function board(t, w) {
+  const ty = TYPE[w.ch.type];
+  const ride = w.ride != null ? w.ride : rand(ty.ride[0], ty.ride[1]);
+  t.pass = { ch: w.ch, type: w.ch.type, mood: w.mood != null ? w.mood : 100, ride, meter: w.meter != null ? w.meter : ride + ty.extra, meterMax: ride + ty.extra,
+    zone: null, base: Math.round((55 + ride * 7) * ty.mult / 5) * 5 };
+  SFX.pickup();
+  addFloat(t.x, t.y - 50, w.ch.type === 'howrah' ? 'Howrah! ×2 fare' : 'Hop in!', '#fff', 20);
+  if (w.ch.type === 'howrah') voice('jaben');
+}
+function dropToCurb(t, ch, extra) {
+  const side = t.x < (ROAD_L + ROAD_R) / 2 ? 0 : 1;
+  G.waiting.push(Object.assign({ x: CURB_X[side], y: clamp(t.y, HUD_H + 40, H - 40), side, ch, ph: 0, state: 'ejected', stateT: 0.8 }, extra || {}));
+}
+function clearZone(t) { if (t.pass && t.pass.zone) { G.zones = G.zones.filter(z => z !== t.pass.zone); } }
+function loseFare(t, msg, color = '#ff7675') {
+  if (!t.pass) return;
+  clearZone(t);
+  addFloat(t.x, t.y - 60, msg, color, 20, 1.6);
+  t.pass = null;
+  SFX.lost();
+}
+function spawnZone(t) {
+  const other = G.zones.find(z => z.owner !== t);
+  let side = randi(0, 1);
+  if (other && Math.random() < 0.5) side = other.side;
+  const z = { owner: t, side, y: -60, h: 110, ph: 0 };
+  G.zones.push(z);
+  t.pass.zone = z;
+}
+function deliver(t) {
+  const p = t.pass;
+  let fare = p.base;
+  let tip = p.mood > 70 ? Math.round(fare * 0.35) : p.mood > 40 ? Math.round(fare * 0.12) : 0;
+  if (p.type === 'rush' && p.meter > p.meterMax * 0.35) tip += 40;
+  const total = fare + tip;
+  t.wallet += total; t.earned += total; t.nightEarned = (t.nightEarned || 0) + total; t.deliveries++;
+  if (G.mode === '1p') G.totalEarned += total;
+  addFloat(t.x, t.y - 60, '+₹' + fare, '#ffe066', 30, 1.4);
+  if (tip > 0) addFloat(t.x, t.y - 95, (p.mood > 70 ? 'Happy tip ' : 'Tip ') + '+₹' + tip, '#7bed9f', 18, 1.4);
+  burst(t.x, t.y, 26, ['#ff9f1a', '#ffd32a', '#ff6b00', '#ffffff'], 260, 7, 1.1, 'petal');
+  SFX.coin(); voice('paid');
+  const xp = 10 + (p.type !== 'normal' ? 5 : 0);
+  S.xp += xp; G.xpGained += xp;
+  if (!S.journal[p.ch.id]) { S.journal[p.ch.id] = true; G.newCards++; addFloat(W / 2, HUD_H + 70, 'NEW STORY CARD: ' + p.ch.name, '#f7c531', 18, 2); }
+  save();
+  if (!G.nightStories.includes(p.ch)) G.nightStories.push(p.ch);
+  clearZone(t);
+  t.pass = null;
+}
+
+function hurt(t, dmg, src) {
+  if (G.mode === '1p') dmg *= 1 - 0.25 * G.up.bumper;
+  t.hp = Math.max(0, t.hp - dmg);
+  G.shake = Math.min(14, G.shake + dmg * 0.6);
+  if (t.pass) {
+    if (t.pass.type === 'fragile') { loseFare(t, t.pass.ch.cargo === 'CAKE' ? 'THE CAKE! RUINED!' : 'THE IDOL CRACKED!', '#ff4757'); }
+    else {
+      t.pass.mood -= t.pass.type === 'granny' ? 40 : 20;
+      if (t.pass.mood <= 0) loseFare(t, 'Ami nemey jabo! (I’m getting off!)');
+    }
+  }
+  if (t.hp <= 0 && t.stall <= 0) breakdown(t);
+}
+function breakdown(t) {
+  t.stall = 2.2; t.inv = 3;
+  addFloat(t.x, t.y - 40, 'BREAKDOWN!', '#ff4757', 26, 1.5);
+  if (t.pass) { const ch = t.pass.ch; clearZone(t); t.pass = null; dropToCurb(t, ch); }
+  SFX.crash();
+}
+
+function horn(t) {
+  t.hornCd = G.mode === '1p' ? 3.4 - 0.7 * G.up.horn : 3;
+  t.hornFx = 0.35;
+  SFX.horn();
+  const R = 125;
+  const push = (o, f) => { const dx = o.x - t.x, dy = o.y - t.y, d = Math.hypot(dx, dy) || 1; if (d > R) return false; o.vx = (o.vx || 0) + dx / d * f; if (o.kind === 'zip' || o.isTaxi) o.y += dy / d * 18; return true; };
+  for (const o of G.objs) {
+    if (o.kind === 'zip' && push(o, 520)) { o.target = null; addFloat(o.x, o.y - 40, 'Hey!', '#fff', 16, 0.8); }
+    else if (o.kind === 'cow' && push(o, 160)) { o.bubbleT = 1.2; SFX.moo(); }
+    else if (o.kind === 'car' || o.kind === 'rick') push(o, 140);
+  }
+  for (const o of G.taxis) {
+    if (o === t) continue;
+    const dx = o.x - t.x, dy = o.y - t.y, d = Math.hypot(dx, dy) || 1;
+    if (d < R) { o.vx += dx / d * 480; o.vy += dy / d * 260; o.stun = 0.35; addFloat(o.x, o.y - 40, 'HONKED!', P_COLORS[t.idx], 16, 0.8); }
+  }
+  if (G.boss && !G.boss.leaving) {
+    const b = G.boss, dx = b.x - t.x, dy = b.y - t.y, d = Math.hypot(dx, dy) || 1;
+    if (d < R + 20) { b.vx += dx / d * 380; b.timer = Math.max(b.timer, 0.8); b.phase = 'stalk'; }
+  }
+  for (let i = 0; i < 3; i++) G.parts.push({ x: t.x, y: t.y, vx: 0, vy: 0, life: 0.35 + i * 0.08, max: 0.35 + i * 0.08, c: P_COLORS[t.idx], size: 20, kind: 'ring', rot: 0, vr: 0 });
+}
+
+// ---------------------------------------------------------------- update
+function updateTaxi(t, dt) {
+  t.hornCd = Math.max(0, t.hornCd - dt); t.inv = Math.max(0, t.inv - dt); t.stealCd = Math.max(0, t.stealCd - dt);
+  t.stun = Math.max(0, t.stun - dt); t.hornFx = Math.max(0, t.hornFx - dt);
+  let inp = readInput(t);
+  if (t.stall > 0) {
+    t.stall -= dt; inp = { ix: 0, iy: 0, horn: false };
+    if (Math.random() < 0.6) smoke(t.x + rand(-8, 8), t.y - 20);
+    if (t.stall <= 0) { t.hp = Math.max(t.hp, 40); addFloat(t.x, t.y - 40, 'Back on the road!', '#7bed9f', 16); }
+  }
+  if (t.stun > 0) { inp.ix *= 0.25; inp.iy *= 0.25; }
+  const spd = (0.78 + 0.22 * t.hp / 100) * (G.mode === '1p' ? 1 + 0.12 * G.up.engine : 1.06);
+  t.vx += inp.ix * 1900 * spd * dt;
+  t.vx *= Math.exp(-6.5 * dt);
+  t.vx = clamp(t.vx, -360 * spd, 360 * spd);
+  if (inp.iy !== 0) t.vy += inp.iy * 1400 * spd * dt;
+  else t.vy += (t.homeY - t.y) * 4 * dt;
+  if (t.inCrowd) { t.vy += 700 * dt; t.vx *= Math.exp(-4 * dt); }
+  if (t.stall > 0) t.vy = 110;
+  t.vy *= Math.exp(-5 * dt);
+  t.vy = clamp(t.vy, -400, 400);
+  t.x += t.vx * dt; t.y += t.vy * dt;
+  const minX = ROAD_L + 19, maxX = ROAD_R - 19;
+  if (t.x < minX) { t.x = minX; t.vx = Math.abs(t.vx) * 0.3; }
+  if (t.x > maxX) { t.x = maxX; t.vx = -Math.abs(t.vx) * 0.3; }
+  t.y = clamp(t.y, HUD_H + 110, H - 70);
+  t.tilt = lerp(t.tilt, t.vx / 360 * 0.28, Math.min(1, dt * 10));
+  if (inp.horn && !t.hornHeld && t.hornCd <= 0 && t.stall <= 0) horn(t);
+  t.hornHeld = inp.horn;
+
+  const p = t.pass;
+  if (p) {
+    p.meter -= dt;
+    p.mood = Math.max(0, p.mood - dt * (p.type === 'granny' ? 2 : 1.3) - (t.inCrowd ? dt * 6 : 0));
+    if (!p.zone) { p.ride -= dt; if (p.ride <= 0) spawnZone(t); }
+    if (p.meter <= 0) loseFare(t, 'Meter ran out! Passenger left!');
+  }
+}
+
+function updateObjs(dt) {
+  const sc = G.cfg.scroll;
+  for (const o of G.objs) { o.t += dt; o.dy = sc * (1 - o.own); }
+  // queueing: a faster object never drives through a slower one in its lane
+  for (const a of G.objs) {
+    if (a.flat) continue;
+    for (const b of G.objs) {
+      if (a === b || b.flat || Math.abs(a.x - b.x) > 42) continue;
+      const gap = 14;
+      if (a.dy > 0 && a.y < b.y && a.y + a.h / 2 + gap > b.y - b.h / 2 && a.dy > b.dy) a.dy = b.dy;
+      if (a.kind === 'zip' && a.y > b.y && a.y - a.h / 2 - gap < b.y + b.h / 2 && a.dy < b.dy) a.dy = Math.min(b.dy, sc * 0.2);
+    }
+  }
+  for (const o of G.objs) {
+    if (o.kind === 'zip') updateZip(o, dt);
+    else if (!o.flat) {
+      if (o.kind === 'cow') { o.x += o.wander * dt; if (o.x < ROAD_L + 25 || o.x > ROAD_R - 25) o.wander *= -1; o.bubbleT = Math.max(0, o.bubbleT - dt); }
+      else o.x += (laneX(o.lane) + (o.kind === 'rick' ? 0 : 0) - o.x) * 1.5 * dt;
+      o.x += o.vx * dt; o.vx *= Math.exp(-4 * dt);
+      if (o.bubbleT) o.bubbleT = Math.max(0, o.bubbleT - dt);
+    }
+    o.y += o.dy * dt;
+  }
+  G.objs = G.objs.filter(o => o.y < H + 260 && o.y > -320);
+}
+function updateZip(o, dt) {
+  // hunt the nearest waiting passenger ahead
+  if (!o.target || !G.waiting.includes(o.target) || o.target.y > o.y + 20) {
+    o.target = null; let best = 1e9;
+    for (const w of G.waiting) { if (w.state === 'ejected' && w.stateT > 0) continue; const d = o.y - w.y; if (d > 30 && d < 520 && d < best) { best = d; o.target = w; } }
+  }
+  let tx = laneX(o.lane);
+  if (o.target) tx = laneX(EDGE_LANE[o.target.side]);
+  // simple avoidance
+  for (const b of G.objs) {
+    if (b === o || b.flat) continue;
+    if (b.y < o.y && o.y - b.y < 150 && Math.abs(b.x - o.x) < 46) { tx = o.x + (o.x < (ROAD_L + ROAD_R) / 2 ? 90 : -90); break; }
+  }
+  o.vx += (tx - o.x) * 5 * dt; o.vx *= Math.exp(-3 * dt); o.vx = clamp(o.vx, -300, 300);
+  o.x = clamp(o.x + o.vx * dt, ROAD_L + 19, ROAD_R - 19);
+  if (o.target && Math.abs(o.y - o.target.y) < 42 && Math.abs(o.x - laneX(EDGE_LANE[o.target.side])) < 50) {
+    const w = o.target;
+    G.waiting = G.waiting.filter(q => q !== w);
+    addFloat(o.x, o.y - 40, 'ZipCab stole a fare!', '#55efc4', 17, 1.3);
+    o.target = null; o.own += 0.25;
+  }
+}
+
+function updateWaiting(dt) {
+  const sc = G.cfg.scroll;
+  for (const w of G.waiting) {
+    w.y += sc * dt; w.ph += dt;
+    if (w.state === 'ejected') { w.stateT -= dt; if (w.stateT <= 0) w.state = null; }
+    if (w.state === 'ejected') continue;
+    for (const t of G.taxis) {
+      if (t.pass || t.stall > 0) continue;
+      const nearLane = Math.abs(t.x - laneX(EDGE_LANE[w.side])) < 52;
+      if (nearLane && Math.abs(t.y - w.y) < 55) { board(t, w); w.gone = true; break; }
+    }
+  }
+  G.waiting = G.waiting.filter(w => !w.gone && w.y < H + 40);
+}
+
+function updateZones(dt) {
+  const sc = G.cfg.scroll;
+  for (const z of G.zones) {
+    z.y += sc * dt; z.ph += dt;
+    const t = z.owner;
+    if (!t.pass || t.pass.zone !== z) { z.dead = true; continue; }
+    if (Math.abs(t.x - laneX(EDGE_LANE[z.side])) < 60 && Math.abs(t.y - z.y) < z.h / 2 + 18 && t.stall <= 0) { deliver(t); z.dead = true; continue; }
+    if (z.y - z.h / 2 > H) { z.dead = true; t.pass.zone = null; t.pass.ride = 2; addFloat(t.x, t.y - 50, 'Missed the pandal! Going around…', '#ffeaa7', 16, 1.4); }
+  }
+  G.zones = G.zones.filter(z => !z.dead);
+}
+
+const overlapR = (a, b, s = 0.82) => Math.abs(a.x - b.x) < (a.w + b.w) / 2 * s && Math.abs(a.y - b.y) < (a.h + b.h) / 2 * s;
+function collisions(dt) {
+  for (const t of G.taxis) {
+    t.inCrowd = false;
+    const tb = { x: t.x, y: t.y, w: 36, h: 62 };
+    for (const o of G.objs) {
+      if (!overlapR(tb, o)) continue;
+      if (o.kind === 'crowd') { t.inCrowd = true; continue; }
+      if (o.kind === 'pot') {
+        if (!o.hit.has(t.idx) && t.stall <= 0) { o.hit.add(t.idx); hurt(t, 5, 'pot'); t.vy += 140; SFX.bump(); addFloat(t.x, t.y - 40, 'Pothole!', '#dfe6e9', 15, 0.8); burst(t.x, t.y + 20, 8, ['#74b9ff', '#a4b0be'], 120, 4, 0.5); }
+        continue;
+      }
+      const dir = Math.sign(t.x - o.x) || (Math.random() < 0.5 ? -1 : 1);
+      // separate
+      const ox = (36 + o.w) / 2 * 0.82 - Math.abs(t.x - o.x);
+      if (ox > 0) t.x += dir * Math.min(ox, 30);
+      if (t.inv > 0 || t.stall > 0) continue;
+      if (o.kind === 'zip') { o.vx -= dir * 260; o.target = null; }
+      else o.vx -= dir * 70;
+      hurt(t, o.dmg, o.kind);
+      t.vx = dir * 280; t.vy = 230; t.stun = 0.3; t.inv = 0.75;
+      burst((t.x + o.x) / 2, (t.y + o.y) / 2, 14, ['#ffeaa7', '#fdcb6e', '#ffffff'], 260, 4, 0.5);
+      if (o.kind === 'cow') { SFX.moo(); o.bubbleT = 1.2; } else SFX.crash();
+    }
+  }
+  // taxi vs taxi: RAM TO STEAL FARES
+  if (G.taxis.length === 2) {
+    const [a, b] = G.taxis;
+    const A = { x: a.x, y: a.y, w: 36, h: 62 }, B = { x: b.x, y: b.y, w: 36, h: 62 };
+    if (overlapR(A, B, 0.95)) {
+      let nx = b.x - a.x, ny = (b.y - a.y) * 0.5; const d = Math.hypot(nx, ny) || 1; nx /= d; ny /= d;
+      const pa = a.vx * nx + a.vy * ny, pb = -(b.vx * nx + b.vy * ny);
+      const ox = 36 * 0.95 - Math.abs(b.x - a.x);
+      if (ox > 0 && Math.abs(b.y - a.y) < 62 * 0.95) { const s = Math.sign(b.x - a.x) || 1; a.x -= s * ox / 2; b.x += s * ox / 2; }
+      const rel = pa + pb;
+      if (rel > 60) {
+        const imp = rel * 0.9;
+        a.vx -= nx * imp; a.vy -= ny * imp * 0.5; b.vx += nx * imp; b.vy += ny * imp * 0.5;
+        SFX.bump(); burst((a.x + b.x) / 2, (a.y + b.y) / 2, 10, ['#fff', '#ffeaa7'], 220, 4, 0.4);
+        G.shake = Math.min(12, G.shake + 5);
+      }
+      if (Math.max(pa, pb) > 150 && a.stealCd <= 0 && b.stealCd <= 0) {
+        const att = pa >= pb ? a : b, vic = att === a ? b : a;
+        a.stealCd = b.stealCd = 0.9;
+        vic.stun = 0.45;
+        if (vic.pass) {
+          const ch = vic.pass.ch, keep = { mood: vic.pass.mood, meter: vic.pass.meter, ride: Math.max(1.5, vic.pass.ride) };
+          if (vic.pass.type === 'fragile') { loseFare(vic, 'SMASHED! Cargo destroyed!', '#ff4757'); }
+          else {
+            clearZone(vic); vic.pass = null;
+            if (!att.pass && att.stall <= 0) { board(att, Object.assign({ ch }, keep)); addFloat(att.x, att.y - 80, 'STOLEN! 😈', P_COLORS[att.idx], 28, 1.4); }
+            else { dropToCurb(vic, ch, keep); addFloat(vic.x, vic.y - 70, 'KNOCKED OUT!', P_COLORS[att.idx], 24, 1.2); }
+          }
+          SFX.steal(); voice('stolen');
+          G.shake = 14;
+        }
+        hurt(vic, 6, 'ram');
+      }
+    }
+  }
+}
+
+function updateBoss(dt) {
+  const c = G.cfg;
+  if (!c.boss || G.mode !== '1p') return;
+  if (!G.boss && !G.bossDone && G.t > 16 && G.t < G.len - 15) {
+    G.boss = { x: (ROAD_L + ROAD_R) / 2, y: -120, vx: 0, vy: 0, w: 50, h: 84, hp: 3, phase: 'enter', timer: 1.5, hitCd: 0, leaving: false, flash: 0 };
+    addFloat(W / 2, HUD_H + 120, 'THE ZIPCAB KING IS HERE!', '#55efc4', 26, 2.2);
+    SFX.strike();
+  }
+  const b = G.boss;
+  if (!b) return;
+  const t = G.taxis[0];
+  b.hitCd = Math.max(0, b.hitCd - dt); b.flash = Math.max(0, b.flash - dt);
+  if (!b.leaving && G.t > G.len - 6) { b.leaving = true; addFloat(W / 2, HUD_H + 120, 'The KING speeds off…', '#55efc4', 20, 1.6); }
+  if (b.leaving) { b.vy = -420; b.y += b.vy * dt; b.x += b.vx * dt; b.vx *= Math.exp(-3 * dt); if (b.y < -200) { G.boss = null; G.bossDone = true; } return; }
+  b.timer -= dt;
+  if (b.phase === 'enter') { b.y = lerp(b.y, t.y - 160, dt * 2); if (b.timer <= 0) { b.phase = 'stalk'; b.timer = 1.6; } }
+  else if (b.phase === 'stalk') {
+    const side = t.x < (ROAD_L + ROAD_R) / 2 ? 1 : -1;
+    const tx = clamp(t.x + side * 115, ROAD_L + 26, ROAD_R - 26);
+    b.vx += (tx - b.x) * 7 * dt; b.vx *= Math.exp(-4 * dt);
+    b.y = lerp(b.y, t.y - 10, dt * 2.5);
+    if (b.timer <= 0) { b.phase = 'charge'; b.timer = 0.75; b.vx = Math.sign(t.x - b.x) * 560; addFloat(b.x, b.y - 55, 'VROOM!', '#55efc4', 18, 0.6); }
+  } else if (b.phase === 'charge') {
+    b.y = lerp(b.y, t.y, dt * 2);
+    if (b.timer <= 0) { b.phase = 'stalk'; b.timer = rand(1.3, 2.1); }
+  } else if (b.phase === 'stunned') { b.vx *= Math.exp(-3 * dt); if (b.timer <= 0) { b.phase = 'stalk'; b.timer = 1.4; } }
+  b.x = clamp(b.x + b.vx * dt, ROAD_L + 26, ROAD_R - 26);
+  if (b.phase !== 'charge') b.vx *= Math.exp(-1.5 * dt);
+  // collision
+  if (b.hitCd <= 0 && overlapR({ x: t.x, y: t.y, w: 36, h: 62 }, b, 0.9) && t.stall <= 0) {
+    const dir = Math.sign(b.x - t.x) || 1;
+    const taxiPush = t.vx * dir;
+    const need = 190 - 35 * G.up.bumper;
+    if (b.phase !== 'charge' && taxiPush > need) {
+      b.hp--; b.hitCd = 0.9; b.flash = 0.4; b.phase = 'stunned'; b.timer = 1.1; b.vx = dir * 480; t.vx = -dir * 160;
+      G.shake = 12; SFX.crash(); burst(b.x, b.y, 20, ['#55efc4', '#ffffff', '#ffd32a'], 300, 5, 0.6);
+      if (b.hp <= 0) { b.leaving = true; t.wallet += 150; G.totalEarned += 150; t.nightEarned += 150; addFloat(W / 2, HUD_H + 130, 'KING DEFEATED! +₹150', '#ffd32a', 28, 2.2); SFX.win(); S.xp += 30; G.xpGained += 30; save(); }
+      else addFloat(b.x, b.y - 60, 'RAMMED! ' + (3 - b.hp) + '/3', '#ffd32a', 22, 1.1);
+    } else {
+      b.hitCd = 1.0; t.inv = Math.max(t.inv, 0.6);
+      t.vx = -dir * 440; t.stun = 0.4;
+      hurt(t, 14, 'boss');
+      if (t.pass) { const msg = t.pass.type === 'fragile' ? 'SMASHED! Cargo destroyed!' : 'KING SNATCHED YOUR FARE!'; loseFare(t, msg, '#55efc4'); SFX.steal(); }
+      SFX.crash(); burst((b.x + t.x) / 2, b.y, 14, ['#fff', '#55efc4'], 240, 4, 0.5);
+      if (b.phase === 'charge') { b.phase = 'stalk'; b.timer = 1.5; b.vx = dir * 200; }
+    }
+  }
+}
+
+function updateParticles(dt) {
+  for (const p of G.parts) {
+    p.life -= dt; p.x += p.vx * dt; p.y += p.vy * dt; p.rot += p.vr * dt;
+    if (p.kind === 'petal') { p.vy += 260 * dt; p.vx *= Math.exp(-2 * dt); }
+    else if (p.kind === 'smoke') { p.size += 14 * dt; }
+    else if (p.kind === 'ring') { p.size += 360 * dt; }
+    else { p.vx *= Math.exp(-3 * dt); p.vy *= Math.exp(-3 * dt); }
+  }
+  G.parts = G.parts.filter(p => p.life > 0);
+  if (G.parts.length > 500) G.parts.splice(0, G.parts.length - 500);
+  for (const f of G.floats) { f.life -= dt; f.y -= 40 * dt; }
+  G.floats = G.floats.filter(f => f.life > 0);
+  G.shake = Math.max(0, G.shake - dt * 30);
+}
+
+function update(dt) {
+  G.bgY += G.cfg.scroll * dt;
+  if (G.state !== 'play') { updateParticles(dt); return; }
+  G.t += dt;
+  runSpawners(dt);
+  for (const t of G.taxis) updateTaxi(t, dt);
+  updateObjs(dt);
+  updateWaiting(dt);
+  updateZones(dt);
+  collisions(dt);
+  updateBoss(dt);
+  updateParticles(dt);
+  if (G.t >= G.len) endNight();
+}
+
+// ---------------------------------------------------------------- night / round end
+function endNight() {
+  G.taxis.forEach(t => { if (t.pass) { clearZone(t); t.pass = null; } });
+  if (G.mode === '2p') return endRound();
+  const t = G.taxis[0];
+  const rent = G.cfg.rent;
+  const paid = t.wallet >= rent;
+  const before = t.wallet;
+  if (paid) { t.wallet -= rent; SFX.win(); voice('paid'); }
+  else { G.strikes++; t.wallet = 0; SFX.strike(); }
+  G.lastResult = { paid, rent, before, tonight: t.nightEarned || 0 };
+  const last = G.night === NIGHTS.length - 1;
+  if (G.strikes >= 3 || (last && !paid)) return endGame(false);
+  if (last && paid) return endGame(true);
+  G.state = 'dawn';
+  showDawn();
+}
+function endRound() {
+  const [a, b] = G.taxis;
+  let w = -1;
+  if (a.wallet > b.wallet) w = 0; else if (b.wallet > a.wallet) w = 1;
+  if (w >= 0) G.wins[w]++;
+  G.lastResult = { w, a: a.wallet, b: b.wallet };
+  G.taxis.forEach(t => { S.xp += Math.round(t.deliveries * 2); });
+  save();
+  SFX.win();
+  G.state = 'round';
+  showRound();
+}
+function endGame(won) {
+  G.state = 'end';
+  const score = G.totalEarned;
+  const newBest = score > S.best;
+  if (newBest) S.best = score;
+  save();
+  showEnd(won, score, newBest);
+}
+
+// ---------------------------------------------------------------- drawing helpers
+function rr(x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
+function hash(n) { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); }
+function text(str, x, y, size, color, align = 'center', weight = '900', stroke = null) {
+  ctx.font = `${weight} ${size}px "Trebuchet MS", "Segoe UI", system-ui, sans-serif`;
+  ctx.textAlign = align; ctx.textBaseline = 'middle';
+  if (stroke) { ctx.lineWidth = Math.max(3, size / 6); ctx.strokeStyle = stroke; ctx.lineJoin = 'round'; ctx.strokeText(str, x, y); }
+  ctx.fillStyle = color; ctx.fillText(str, x, y);
+}
+function bubble(x, y, str, bg = '#fff', fg = '#1b1430', size = 13) {
+  ctx.font = `800 ${size}px "Trebuchet MS", system-ui, sans-serif`;
+  const w = ctx.measureText(str).width + 14, h = size + 10;
+  let bx = clamp(x - w / 2, 4, W - w - 4);
+  const by = y - h - 8;
+  ctx.fillStyle = bg; rr(bx, by, w, h, 8); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(clamp(x, bx + 8, bx + w - 8) - 5, by + h); ctx.lineTo(clamp(x, bx + 8, bx + w - 8) + 5, by + h); ctx.lineTo(clamp(x, bx + 8, bx + w - 8), by + h + 7); ctx.fill();
+  ctx.fillStyle = fg; ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillText(str, bx + 7, by + h / 2 + 1);
+}
+
+// ---------------------------------------------------------------- world drawing (Storybook Flat)
+const BLOCK = 140;
+const BUILD_COLS = ['#5b3a6b', '#7a4a3a', '#3f5d6b', '#6b5b3a', '#4b3a6b', '#6b3a4f', '#3a6b5b'];
+function drawBackground() {
+  const prog = G.state === 'play' ? clamp(G.t / G.len, 0, 1) : 0;
+  // road
+  ctx.fillStyle = '#2b2838'; ctx.fillRect(ROAD_L, 0, ROAD_R - ROAD_L, H);
+  // sidewalks
+  ctx.fillStyle = '#8d7b68'; ctx.fillRect(56, 0, ROAD_L - 56, H); ctx.fillRect(ROAD_R, 0, W - 56 - ROAD_R, H);
+  ctx.fillStyle = '#a8957f'; ctx.fillRect(ROAD_L - 6, 0, 6, H); ctx.fillRect(ROAD_R, 0, 6, H);
+  const off = G.bgY % 40;
+  ctx.strokeStyle = 'rgba(0,0,0,.12)'; ctx.lineWidth = 2;
+  for (let y = -40 + off; y < H; y += 40) { ctx.beginPath(); ctx.moveTo(56, y); ctx.lineTo(ROAD_L - 6, y); ctx.moveTo(ROAD_R + 6, y); ctx.lineTo(W - 56, y); ctx.stroke(); }
+  // tram tracks
+  const tx = laneX(TRAM_LANE);
+  ctx.fillStyle = 'rgba(0,0,0,.25)';
+  const so = G.bgY % 26;
+  for (let y = -26 + so; y < H; y += 26) ctx.fillRect(tx - 22, y, 44, 7);
+  ctx.strokeStyle = '#9aa0a6'; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.moveTo(tx - 14, 0); ctx.lineTo(tx - 14, H); ctx.moveTo(tx + 14, 0); ctx.lineTo(tx + 14, H); ctx.stroke();
+  // lane dashes
+  ctx.fillStyle = 'rgba(255,255,255,.55)';
+  const doff = G.bgY % 80;
+  for (let l = 1; l < 4; l++) { const x = ROAD_L + LANE_W * l - 2; for (let y = -80 + doff; y < H; y += 80) ctx.fillRect(x, y, 4, 40); }
+  // buildings & pandals
+  for (const side of [0, 1]) {
+    const x0 = side === 0 ? 0 : W - 56;
+    const base = Math.floor(G.bgY / BLOCK);
+    const o2 = G.bgY % BLOCK;
+    for (let i = -1; i <= Math.ceil(H / BLOCK); i++) {
+      const id = base - i, y = i * BLOCK + o2;
+      const r = hash(id * 2 + side);
+      if ((id + side * 3) % 6 === 0) drawPandalFacade(x0, y, side, id);
+      else {
+        ctx.fillStyle = BUILD_COLS[Math.floor(r * BUILD_COLS.length)];
+        ctx.fillRect(x0, y, 56, BLOCK - 4);
+        ctx.fillStyle = 'rgba(0,0,0,.18)'; ctx.fillRect(side === 0 ? x0 + 48 : x0, y, 8, BLOCK - 4);
+        for (let wy = 0; wy < 4; wy++) for (let wx = 0; wx < 2; wx++) {
+          const lit = hash(id * 13 + wy * 3 + wx + side * 7) > 0.35;
+          ctx.fillStyle = lit ? '#ffd57a' : '#2a2140';
+          ctx.fillRect(x0 + 10 + wx * 20, y + 14 + wy * 30, 12, 16);
+        }
+      }
+    }
+  }
+  // overhead Pujo light strings
+  const sp = 420, lo = G.bgY % sp;
+  for (let y = -sp + lo; y < H + 40; y += sp) {
+    const n = 24;
+    for (let i = 0; i <= n; i++) {
+      const u = i / n, x = 50 + u * (W - 100), yy = y + Math.sin(u * Math.PI) * 34;
+      const c = ['#ff4757', '#ffd32a', '#2ed573', '#1e90ff', '#ff6b81'][i % 5];
+      const tw = 0.55 + 0.45 * Math.sin(performance.now() / 180 + i * 1.7);
+      ctx.globalAlpha = tw; ctx.fillStyle = c; ctx.beginPath(); ctx.arc(x, yy, 3.4, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+  return prog;
+}
+function drawPandalFacade(x0, y, side, id) {
+  const cols = ['#ff7675', '#fdcb6e', '#a29bfe', '#55efc4', '#fab1a0'];
+  const c = cols[Math.abs(id) % cols.length];
+  ctx.fillStyle = '#3a1f4b'; ctx.fillRect(x0, y, 56, BLOCK - 4);
+  ctx.fillStyle = c; ctx.fillRect(x0 + 6, y + 24, 44, BLOCK - 34);
+  ctx.beginPath(); ctx.moveTo(x0 + 2, y + 28); ctx.lineTo(x0 + 28, y + 4); ctx.lineTo(x0 + 54, y + 28); ctx.fill();
+  ctx.fillStyle = '#2d1b00'; rr(x0 + 16, y + 60, 24, 70, 10); ctx.fill();
+  ctx.fillStyle = '#ffd32a';
+  for (let i = 0; i < 7; i++) { const a = performance.now() / 300 + i; ctx.globalAlpha = 0.6 + 0.4 * Math.sin(a); ctx.beginPath(); ctx.arc(x0 + 8 + i * 6.7, y + 30, 2.2, 0, 7); ctx.fill(); }
+  ctx.globalAlpha = 1;
+}
+
+function drawCarShape(x, y, w, h, body, dark, opts = {}) {
+  ctx.save(); ctx.translate(x, y); if (opts.rot) ctx.rotate(opts.rot);
+  ctx.fillStyle = 'rgba(0,0,0,.35)'; rr(-w / 2 + 3, -h / 2 + 5, w, h, 9); ctx.fill();
+  ctx.fillStyle = '#111'; [[-w / 2 - 2, -h / 2 + 9], [w / 2 - 3, -h / 2 + 9], [-w / 2 - 2, h / 2 - 19], [w / 2 - 3, h / 2 - 19]].forEach(([a, b]) => ctx.fillRect(a, b, 5, 11));
+  ctx.fillStyle = body; rr(-w / 2, -h / 2, w, h, 10); ctx.fill();
+  if (opts.stripe) { ctx.fillStyle = opts.stripe; ctx.fillRect(-w / 2 + 2, -4, w - 4, 7); }
+  ctx.fillStyle = dark; rr(-w / 2 + 5, -h / 2 + 3, w - 10, 9, 4); ctx.fill();
+  ctx.fillStyle = '#1e3a5f'; rr(-w / 2 + 5, -h / 2 + 13, w - 10, 11, 3); ctx.fill();
+  ctx.fillStyle = opts.roof || body; rr(-w / 2 + 5, -h / 2 + 24, w - 10, h - 40, 5); ctx.fill();
+  ctx.fillStyle = 'rgba(255,255,255,.18)'; ctx.fillRect(-w / 2 + 7, -h / 2 + 26, 4, h - 44);
+  ctx.fillStyle = '#1e3a5f'; rr(-w / 2 + 6, h / 2 - 16, w - 12, 8, 3); ctx.fill();
+  ctx.fillStyle = '#fff7c2'; ctx.fillRect(-w / 2 + 3, -h / 2 + 1, 7, 4); ctx.fillRect(w / 2 - 10, -h / 2 + 1, 7, 4);
+  ctx.fillStyle = '#ff3b3b'; ctx.fillRect(-w / 2 + 3, h / 2 - 5, 7, 4); ctx.fillRect(w / 2 - 10, h / 2 - 5, 7, 4);
+  ctx.restore();
+}
+function drawTaxi(t) {
+  const blink = t.inv > 0 && t.stall <= 0 && Math.floor(performance.now() / 80) % 2 === 0;
+  ctx.save(); ctx.translate(t.x, t.y);
+  // player ring
+  ctx.strokeStyle = P_COLORS[t.idx]; ctx.lineWidth = 3; ctx.globalAlpha = 0.85;
+  ctx.beginPath(); ctx.ellipse(0, 4, 30, 42, 0, 0, Math.PI * 2); ctx.stroke(); ctx.globalAlpha = 1;
+  // horn cooldown arc
+  if (t.hornCd > 0) {
+    const max = G.mode === '1p' ? 3.4 - 0.7 * G.up.horn : 3;
+    ctx.strokeStyle = 'rgba(255,255,255,.5)'; ctx.lineWidth = 4;
+    ctx.beginPath(); ctx.arc(0, 4, 47, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * (1 - t.hornCd / max)); ctx.stroke();
+  }
+  ctx.restore();
+  if (blink) ctx.globalAlpha = 0.45;
+  drawCarShape(t.x, t.y, 36, 62, t.paint.body, t.paint.dark, { stripe: t.paint.stripe, rot: t.tilt });
+  // roof light
+  ctx.save(); ctx.translate(t.x, t.y); ctx.rotate(t.tilt);
+  ctx.fillStyle = t.pass ? '#555' : P_COLORS[t.idx]; rr(-11, -2, 22, 10, 3); ctx.fill();
+  ctx.font = '900 8px system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#fff';
+  ctx.fillText(G.mode === '2p' ? 'P' + (t.idx + 1) : 'TAXI', 0, 3.5);
+  ctx.restore();
+  ctx.globalAlpha = 1;
+  if (t.hornFx > 0) text('PYAAN!', t.x, t.y - 52, 15, '#fff', 'center', '900', P_COLORS[t.idx]);
+  if (t.stall > 0) text('🔧 ' + t.stall.toFixed(1), t.x, t.y + 46, 14, '#fff', 'center', '900', '#000');
+  // passenger HUD
+  const p = t.pass;
+  if (p) {
+    const bx = t.x - 30, by = t.y + 40;
+    ctx.fillStyle = 'rgba(0,0,0,.6)'; rr(bx - 2, by - 2, 64, 12, 5); ctx.fill();
+    const f = clamp(p.meter / p.meterMax, 0, 1);
+    ctx.fillStyle = f > 0.5 ? '#2ed573' : f > 0.25 ? '#ffa502' : '#ff4757'; rr(bx, by, 60 * f, 8, 4); ctx.fill();
+    drawMood(t.x + 44, t.y - 30, p.mood);
+    const lab = TYPE[p.type].label;
+    if (lab) text(lab, t.x, t.y + 62, 11, p.type === 'fragile' ? '#ff7675' : '#ffeaa7', 'center', '900', '#000');
+    if (p.zone) {
+      const leftSide = p.zone.side === 0;
+      const ax = leftSide ? t.x - 50 : t.x + 50;
+      const pulse = 0.6 + 0.4 * Math.sin(performance.now() / 120);
+      ctx.globalAlpha = pulse;
+      text(leftSide ? '◀ DROP' : 'DROP ▶', ax, t.y - 4, 15, '#fff', 'center', '900', P_COLORS[t.idx]);
+      ctx.globalAlpha = 1;
+    }
+  }
+}
+function drawMood(x, y, m) {
+  const c = m > 70 ? '#2ed573' : m > 40 ? '#ffd32a' : m > 15 ? '#ffa502' : '#ff4757';
+  ctx.fillStyle = '#000'; ctx.beginPath(); ctx.arc(x, y, 11, 0, 7); ctx.fill();
+  ctx.fillStyle = c; ctx.beginPath(); ctx.arc(x, y, 9.5, 0, 7); ctx.fill();
+  ctx.fillStyle = '#000'; ctx.fillRect(x - 4, y - 3, 2.4, 2.6); ctx.fillRect(x + 2, y - 3, 2.4, 2.6);
+  ctx.strokeStyle = '#000'; ctx.lineWidth = 1.8; ctx.beginPath();
+  if (m > 70) ctx.arc(x, y + 1, 4.5, 0.15 * Math.PI, 0.85 * Math.PI);
+  else if (m > 40) { ctx.moveTo(x - 4, y + 4); ctx.lineTo(x + 4, y + 4); }
+  else ctx.arc(x, y + 7.5, 4.5, 1.2 * Math.PI, 1.8 * Math.PI);
+  ctx.stroke();
+}
+function drawObj(o) {
+  switch (o.kind) {
+    case 'car': drawCarShape(o.x, o.y, o.w, o.h, o.color, 'rgba(0,0,0,.25)'); break;
+    case 'zip': {
+      drawCarShape(o.x, o.y, o.w, o.h, '#e8fff8', '#0f2e2a', { roof: '#111', stripe: '#00b894' });
+      ctx.fillStyle = '#00b894'; ctx.beginPath(); ctx.arc(o.x, o.y + 3, 8, 0, 7); ctx.fill();
+      text('Z', o.x, o.y + 4, 11, '#fff');
+      break;
+    }
+    case 'bus': {
+      ctx.save(); ctx.translate(o.x, o.y);
+      ctx.fillStyle = 'rgba(0,0,0,.35)'; rr(-o.w / 2 + 3, -o.h / 2 + 5, o.w, o.h, 8); ctx.fill();
+      ctx.fillStyle = o.color; rr(-o.w / 2, -o.h / 2, o.w, o.h, 8); ctx.fill();
+      ctx.fillStyle = '#f1f2f6'; rr(-o.w / 2 + 4, -o.h / 2 + 4, o.w - 8, 14, 4); ctx.fill();
+      ctx.fillStyle = 'rgba(0,0,0,.2)'; for (let i = 0; i < 5; i++) ctx.fillRect(-o.w / 2 + 6, -o.h / 2 + 26 + i * 20, o.w - 12, 3);
+      ctx.fillStyle = '#ffd32a'; ctx.fillRect(-o.w / 2, -2, o.w, 6);
+      ctx.restore();
+      if (o.bubble && o.bubbleT > 0 && o.y > HUD_H + 60) bubble(o.x, o.y - o.h / 2, o.bubble, '#ffeaa7');
+      break;
+    }
+    case 'tram': {
+      ctx.save(); ctx.translate(o.x, o.y);
+      ctx.fillStyle = 'rgba(0,0,0,.35)'; rr(-o.w / 2 + 3, -o.h / 2 + 5, o.w, o.h, 10); ctx.fill();
+      ctx.fillStyle = '#2e5aa8'; rr(-o.w / 2, -o.h / 2, o.w, o.h, 10); ctx.fill();
+      ctx.fillStyle = '#efe6cc'; rr(-o.w / 2 + 6, -o.h / 2 + 6, o.w - 12, o.h - 12, 7); ctx.fill();
+      ctx.fillStyle = '#2e5aa8'; ctx.fillRect(-o.w / 2 + 6, -3, o.w - 12, 6);
+      ctx.strokeStyle = '#333'; ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.moveTo(-12, -30); ctx.lineTo(0, -62); ctx.lineTo(12, -30); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(-14, 40); ctx.lineTo(14, 40); ctx.stroke();
+      text('TRAM', 0, 50, 12, '#2e5aa8');
+      ctx.restore();
+      break;
+    }
+    case 'rick': {
+      ctx.save(); ctx.translate(o.x, o.y);
+      ctx.fillStyle = 'rgba(0,0,0,.3)'; ctx.fillRect(-15, -6, 32, 40);
+      ctx.strokeStyle = '#6d4c41'; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(-9, 0); ctx.lineTo(-9, -30); ctx.moveTo(9, 0); ctx.lineTo(9, -30); ctx.stroke();
+      ctx.fillStyle = '#111'; ctx.fillRect(-18, 6, 5, 22); ctx.fillRect(13, 6, 5, 22);
+      ctx.fillStyle = '#8b2c1f'; rr(-14, -2, 28, 32, 6); ctx.fill();
+      ctx.fillStyle = '#b5462e'; rr(-12, 2, 24, 14, 5); ctx.fill();
+      const bob = Math.sin(o.t * 12) * 2;
+      ctx.fillStyle = '#f5f6fa'; ctx.beginPath(); ctx.arc(0, -30 + bob, 8, 0, 7); ctx.fill();
+      ctx.fillStyle = '#5d4037'; ctx.beginPath(); ctx.arc(0, -31 + bob, 5, 0, 7); ctx.fill();
+      ctx.restore();
+      break;
+    }
+    case 'cow': {
+      ctx.save(); ctx.translate(o.x, o.y);
+      ctx.fillStyle = 'rgba(0,0,0,.3)'; ctx.beginPath(); ctx.ellipse(3, 4, 22, 15, 0, 0, 7); ctx.fill();
+      ctx.fillStyle = '#f5f0e8'; ctx.beginPath(); ctx.ellipse(0, 0, 22, 15, 0, 0, 7); ctx.fill();
+      ctx.fillStyle = '#3d3d3d'; ctx.beginPath(); ctx.arc(-8, -4, 5, 0, 7); ctx.arc(7, 5, 4, 0, 7); ctx.fill();
+      const hx = o.wander >= 0 ? 22 : -22;
+      ctx.fillStyle = '#efe7da'; ctx.beginPath(); ctx.arc(hx, -2, 8, 0, 7); ctx.fill();
+      ctx.strokeStyle = '#d9c9a8'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(hx - 5, -9); ctx.lineTo(hx - 8, -15); ctx.moveTo(hx + 5, -9); ctx.lineTo(hx + 8, -15); ctx.stroke();
+      ctx.fillStyle = '#e8a598'; ctx.beginPath(); ctx.arc(hx + (hx > 0 ? 4 : -4), 1, 3, 0, 7); ctx.fill();
+      ctx.restore();
+      if (o.bubbleT > 0) bubble(o.x, o.y - 18, 'MOOO!', '#fff');
+      break;
+    }
+    case 'pot': {
+      ctx.fillStyle = '#1a1824'; ctx.beginPath(); ctx.ellipse(o.x, o.y, o.w / 2, o.h / 2, 0, 0, 7); ctx.fill();
+      ctx.fillStyle = 'rgba(116,185,255,.35)'; ctx.beginPath(); ctx.ellipse(o.x - 4, o.y - 2, o.w / 2 - 8, o.h / 2 - 7, 0, 0, 7); ctx.fill();
+      ctx.strokeStyle = '#4a4560'; ctx.lineWidth = 3; ctx.beginPath(); ctx.ellipse(o.x, o.y, o.w / 2, o.h / 2, 0, 0, 7); ctx.stroke();
+      break;
+    }
+    case 'crowd': {
+      ctx.fillStyle = 'rgba(255,211,42,.10)'; rr(o.x - o.w / 2, o.y - o.h / 2, o.w, o.h, 16); ctx.fill();
+      const tt = performance.now() / 200;
+      for (const p of o.people) {
+        const bob = Math.sin(tt + p.ph) * 2;
+        ctx.fillStyle = p.c; ctx.beginPath(); ctx.arc(o.x + p.dx, o.y + p.dy + bob + 4, 7, 0, 7); ctx.fill();
+        ctx.fillStyle = '#3b2a20'; ctx.beginPath(); ctx.arc(o.x + p.dx, o.y + p.dy + bob - 3, 4.5, 0, 7); ctx.fill();
+      }
+      if (o.y > HUD_H + 40 && o.y < H - 100) text('PUJO CROWD', o.x, o.y - o.h / 2 - 8, 11, '#ffd32a', 'center', '900', '#000');
+      break;
+    }
+  }
+}
+function drawWaiting(w) {
+  const x = w.x, y = w.y;
+  ctx.fillStyle = 'rgba(0,0,0,.3)'; ctx.beginPath(); ctx.ellipse(x + 2, y + 14, 11, 5, 0, 0, 7); ctx.fill();
+  ctx.fillStyle = w.ch.color; rr(x - 9, y - 6, 18, 22, 7); ctx.fill();
+  ctx.fillStyle = '#c68642'; ctx.beginPath(); ctx.arc(x, y - 12, 7.5, 0, 7); ctx.fill();
+  ctx.fillStyle = '#2d1b10'; ctx.beginPath(); ctx.arc(x, y - 15, 7, Math.PI, 0); ctx.fill();
+  const toward = w.side === 0 ? 1 : -1;
+  const wave = Math.sin(w.ph * 10) * 0.6;
+  ctx.strokeStyle = '#c68642'; ctx.lineWidth = 4; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(x + toward * 7, y - 3); ctx.lineTo(x + toward * (12 + Math.cos(wave) * 4), y - 20 - Math.sin(wave) * 6); ctx.stroke();
+  ctx.lineCap = 'butt';
+  if (w.ch.type === 'fragile') { ctx.fillStyle = '#ffeaa7'; ctx.fillRect(x - toward * 16 - 7, y, 14, 12); text('!', x - toward * 16, y + 6, 10, '#d63031'); }
+  if (w.state === 'ejected') { bubble(x, y - 22, 'Hmph!', '#ffeaa7', '#1b1430', 12); return; }
+  if (y > HUD_H + 50 && y < H - 30) {
+    const bg = w.ch.type === 'howrah' ? '#ffd32a' : w.ch.type === 'fragile' ? '#ff7675' : w.ch.type === 'rush' ? '#fd79a8' : '#fff';
+    bubble(x, y - 22, w.ch.bubble, bg, '#1b1430', 12);
+  }
+}
+function drawZone(z) {
+  const lane = EDGE_LANE[z.side], lx = laneX(lane), c = P_COLORS[z.owner.idx];
+  const pulse = 0.5 + 0.5 * Math.sin(z.ph * 6);
+  ctx.globalAlpha = 0.18 + 0.18 * pulse; ctx.fillStyle = c;
+  rr(lx - LANE_W / 2 + 4, z.y - z.h / 2, LANE_W - 8, z.h, 14); ctx.fill();
+  ctx.globalAlpha = 1; ctx.strokeStyle = c; ctx.lineWidth = 4; ctx.setLineDash([10, 8]);
+  rr(lx - LANE_W / 2 + 4, z.y - z.h / 2, LANE_W - 8, z.h, 14); ctx.stroke(); ctx.setLineDash([]);
+  // gate arch over the curb lane
+  const gx = lx, gy = z.y - z.h / 2 + 4;
+  ctx.fillStyle = '#c0392b'; ctx.fillRect(gx - LANE_W / 2 + 6, gy, 8, z.h - 8); ctx.fillRect(gx + LANE_W / 2 - 14, gy, 8, z.h - 8);
+  ctx.fillStyle = '#f39c12'; rr(gx - LANE_W / 2 + 2, gy - 18, LANE_W - 4, 22, 8); ctx.fill();
+  for (let i = 0; i < 9; i++) { ctx.fillStyle = ['#ff4757', '#fff200', '#2ed573'][i % 3]; ctx.globalAlpha = 0.6 + 0.4 * Math.sin(z.ph * 8 + i); ctx.beginPath(); ctx.arc(gx - LANE_W / 2 + 12 + i * ((LANE_W - 24) / 8), gy - 7, 3, 0, 7); ctx.fill(); }
+  ctx.globalAlpha = 1;
+  text(G.mode === '2p' ? 'P' + (z.owner.idx + 1) + ' DROP' : 'DROP HERE', gx, z.y + 6, 15, '#fff', 'center', '900', c);
+}
+function drawBoss(b) {
+  ctx.save();
+  if (b.flash > 0 && Math.floor(performance.now() / 60) % 2 === 0) ctx.globalAlpha = 0.5;
+  drawCarShape(b.x, b.y, b.w, b.h, '#111', '#d4af37', { roof: '#1e1e1e', stripe: '#d4af37' });
+  ctx.restore();
+  text('👑', b.x, b.y - 2, 20, '#fff');
+  if (b.phase === 'charge') text('!!', b.x, b.y - 58, 20, '#ff4757', 'center', '900', '#000');
+  for (let i = 0; i < 3; i++) { ctx.fillStyle = i < b.hp ? '#55efc4' : 'rgba(255,255,255,.2)'; rr(b.x - 25 + i * 18, b.y + 50, 14, 7, 3); ctx.fill(); }
+  text('ZIPCAB KING', b.x, b.y + 66, 11, '#55efc4', 'center', '900', '#000');
+}
+function drawParticles() {
+  for (const p of G.parts) {
+    const a = clamp(p.life / p.max, 0, 1);
+    ctx.globalAlpha = p.kind === 'smoke' ? a * 0.5 : a;
+    if (p.kind === 'ring') { ctx.strokeStyle = p.c; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, 7); ctx.stroke(); }
+    else if (p.kind === 'petal') { ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot); ctx.fillStyle = p.c; ctx.beginPath(); ctx.ellipse(0, 0, p.size, p.size * 0.55, 0, 0, 7); ctx.fill(); ctx.restore(); }
+    else { ctx.fillStyle = p.c; ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, 7); ctx.fill(); }
+  }
+  ctx.globalAlpha = 1;
+}
+function drawHUD() {
+  ctx.fillStyle = 'rgba(27,20,48,.92)'; ctx.fillRect(0, 0, W, HUD_H);
+  ctx.fillStyle = '#f7c531'; ctx.fillRect(0, HUD_H - 3, W, 3);
+  const prog = clamp(G.t / G.len, 0, 1);
+  const left = Math.max(0, Math.ceil(G.len - G.t));
+  // dawn bar
+  const bw = 170, bx = W / 2 - bw / 2, by = 36;
+  const grad = ctx.createLinearGradient(bx, 0, bx + bw, 0); grad.addColorStop(0, '#2c2c6c'); grad.addColorStop(0.7, '#a55eea'); grad.addColorStop(1, '#ff9f43');
+  ctx.fillStyle = 'rgba(255,255,255,.12)'; rr(bx, by, bw, 12, 6); ctx.fill();
+  ctx.fillStyle = grad; rr(bx, by, Math.max(12, bw * prog), 12, 6); ctx.fill();
+  text(prog < 0.85 ? '🌙' : '🌅', bx + bw * prog, by + 6, 16, '#fff');
+  text(G.mode === '1p' ? 'DAWN IN ' + left + 's' : left + 's', W / 2, 18, 15, left <= 10 ? '#ff6b6b' : '#fff');
+  if (G.mode === '1p') {
+    const t = G.taxis[0];
+    text(G.cfg.name.toUpperCase(), 12, 18, 17, '#f7c531', 'left');
+    text('Night ' + (G.night + 1) + '/5', 12, 42, 13, '#dfe6e9', 'left', '700');
+    for (let i = 0; i < 3; i++) text(i < G.strikes ? '❌' : '🚕', 92 + i * 20, 42, 13, '#fff');
+    const rent = G.cfg.rent, okc = t.wallet >= rent ? '#7bed9f' : '#ffd32a';
+    text('₹' + t.wallet, W - 12, 20, 24, okc, 'right');
+    text('Rent ₹' + rent + (t.wallet >= rent ? ' ✓' : ''), W - 12, 46, 13, okc, 'right', '700');
+    // hp
+    ctx.fillStyle = 'rgba(255,255,255,.15)'; rr(W - 175, 40, 56, 9, 4); ctx.fill();
+    ctx.fillStyle = t.hp > 50 ? '#2ed573' : t.hp > 25 ? '#ffa502' : '#ff4757'; rr(W - 175, 40, 56 * t.hp / 100, 9, 4); ctx.fill();
+    text('🔧', W - 186, 45, 11, '#fff');
+  } else {
+    const [a, b] = G.taxis;
+    text('P1  ₹' + a.wallet, 12, 22, 22, P_COLORS[0], 'left');
+    text('P2  ₹' + b.wallet, W - 12, 22, 22, P_COLORS[1], 'right');
+    for (let i = 0; i < 2; i++) { text(i < G.wins[0] ? '★' : '☆', 14 + i * 18, 46, 15, P_COLORS[0], 'left'); text(i < G.wins[1] ? '★' : '☆', W - 14 - i * 18, 46, 15, P_COLORS[1], 'right'); }
+    for (const [t, x] of [[a, 70], [b, W - 70]]) { ctx.fillStyle = 'rgba(255,255,255,.15)'; rr(x - 20, 41, 40, 7, 3); ctx.fill(); ctx.fillStyle = t.hp > 50 ? '#2ed573' : t.hp > 25 ? '#ffa502' : '#ff4757'; rr(x - 20, 41, 40 * t.hp / 100, 7, 3); ctx.fill(); }
+  }
+  // pause button
+  ctx.fillStyle = 'rgba(27,20,48,.7)'; rr(PAUSE_BTN.x, PAUSE_BTN.y, PAUSE_BTN.w, PAUSE_BTN.h, 10); ctx.fill();
+  ctx.fillStyle = '#fff'; ctx.fillRect(PAUSE_BTN.x + 14, PAUSE_BTN.y + 12, 5, 18); ctx.fillRect(PAUSE_BTN.x + 23, PAUSE_BTN.y + 12, 5, 18);
+}
+function drawTouch() {
+  if (!touchMode || G.state !== 'play') return;
+  const active = new Set();
+  const btns = touchButtons();
+  for (const p of pointers.values()) btns.forEach((b, i) => { if (inRect(p, b)) active.add(i); });
+  btns.forEach((b, i) => {
+    ctx.globalAlpha = active.has(i) ? 0.75 : 0.38;
+    ctx.fillStyle = G.mode === '2p' ? P_COLORS[b.id] : (b.act === 'h' ? '#ff4d6d' : '#1b1430');
+    rr(b.x, b.y, b.w, b.h, 18); ctx.fill();
+    ctx.globalAlpha = 0.95;
+    text(b.label, b.x + b.w / 2, b.y + b.h / 2, b.label.length > 2 ? 15 : 30, '#fff');
+  });
+  ctx.globalAlpha = 1;
+}
+
+function draw() {
+  const k = cvs.width / W;
+  ctx.setTransform(k, 0, 0, cvs.height / H, 0, 0);
+  ctx.save();
+  if (G.shake > 0) ctx.translate(rand(-G.shake, G.shake) * 0.5, rand(-G.shake, G.shake) * 0.5);
+  const prog = drawBackground();
+  const inGame = G.state !== 'menu';
+  if (inGame) {
+    for (const z of G.zones) drawZone(z);
+    for (const o of G.objs) if (o.flat) drawObj(o);
+    for (const w of G.waiting) drawWaiting(w);
+    for (const o of G.objs) if (!o.flat && o.kind !== 'zip') drawObj(o);
+    for (const o of G.objs) if (o.kind === 'zip') drawObj(o);
+    if (G.boss) drawBoss(G.boss);
+    for (const t of G.taxis) drawTaxi(t);
+    drawParticles();
+  } else {
+    // attract mode: a lone taxi cruising
+    const tt = performance.now() / 1000;
+    drawCarShape(W / 2 + Math.sin(tt * 0.8) * 110, H - 220, 36, 62, '#f7c531', '#c99a14', { rot: Math.cos(tt * 0.8) * 0.12 });
+  }
+  // night → dawn tint
+  ctx.fillStyle = `rgba(12,10,48,${0.32 - 0.26 * prog})`; ctx.fillRect(0, 0, W, H);
+  if (prog > 0.6) { ctx.fillStyle = `rgba(255,140,60,${(prog - 0.6) * 0.35})`; ctx.fillRect(0, 0, W, H); }
+  ctx.restore();
+  if (inGame) {
+    for (const f of G.floats) { ctx.globalAlpha = clamp(f.life / f.max * 1.6, 0, 1); text(f.text, clamp(f.x, 80, W - 80), f.y, f.size, f.color, 'center', '900', '#1b1430'); }
+    ctx.globalAlpha = 1;
+    if (G.state === 'play' || G.state === 'paused') drawHUD();
+    drawTouch();
+  }
+}
+
+// ---------------------------------------------------------------- main loop
+let last = performance.now();
+function frame(now) {
+  let dt = (now - last) / 1000; last = now;
+  if (!(dt > 0)) dt = 0;
+  dt = Math.min(dt, 0.05);
+  try { update(dt); draw(); }
+  catch (err) { console.error(err); }
+  requestAnimationFrame(frame);
+}
+
+// ---------------------------------------------------------------- screens (DOM overlays)
+function showOverlay(html) { overlay.innerHTML = '<div class="panel">' + html + '</div>'; overlay.classList.add('on'); }
+function hideOverlay() { overlay.classList.remove('on'); overlay.innerHTML = ''; }
+overlay.addEventListener('click', e => {
+  const b = e.target.closest('[data-a]');
+  if (!b || b.disabled) return;
+  audioInit(); SFX.click();
+  const a = b.getAttribute('data-a');
+  ACTIONS[a] && ACTIONS[a](b);
+});
+const controlsHTML = () => G.mode === '2p'
+  ? `<div class="keys"><div><b class="p1">PLAYER 1</b><br><kbd>A</kbd> <kbd>D</kbd> steer · <kbd>W</kbd> <kbd>S</kbd> speed<br><kbd>SPACE</kbd> honk</div><div><b class="p2">PLAYER 2</b><br><kbd>◀</kbd> <kbd>▶</kbd> steer · <kbd>▲</kbd> <kbd>▼</kbd> speed<br><kbd>ENTER</kbd> honk</div></div><p class="muted">On a phone: left buttons for P1, right buttons for P2.</p>`
+  : `<div class="keys"><div><b>KEYBOARD</b><br><kbd>←</kbd><kbd>→</kbd> or <kbd>A</kbd><kbd>D</kbd> steer<br><kbd>↑</kbd> speed up · <kbd>SPACE</kbd> honk</div><div><b>PHONE</b><br>◀ ▶ steer<br>BOOST · HONK buttons</div></div>`;
+
+function showMenu() {
+  G.state = 'menu';
+  const r = rankIndex(S.xp), next = RANKS[r + 1];
+  const paintIdx = Math.min(S.paint, r);
+  const pt = PAINTS[paintIdx];
+  const cards = Object.keys(S.journal).length;
+  showOverlay(`
+    <div class="logo">PUJO NIGHT<br>RUSH<small>SAVE THE LAST YELLOW TAXI</small></div>
+    <p style="margin-top:calc(var(--u)*12)">It's Durga Puja in Kolkata. App cabs are taking over.<br><b>Earn the malik's rent by dawn, or your Ambassador gets scrapped.</b></p>
+    ${CHALLENGE ? `<div class="banner">🏁 ${esc(CHALLENGE.from)} earned ₹${CHALLENGE.beat}. Can you beat it?</div>` : ''}
+    <button class="btn" data-a="play1" data-primary>▶ STORY MODE · 1 PLAYER</button>
+    <button class="btn red" data-a="play2">⚔ SHOWDOWN · 2 PLAYERS</button>
+    <div class="row"><button class="btn ghost" data-a="journal">📖 Stories ${cards}/${CHARS.length}</button><button class="btn ghost" data-a="how">❓ How to play</button></div>
+    <div class="paint"><button data-a="paintPrev" aria-label="previous paint">‹</button><span><span class="swatch" style="background:${pt.body}"></span>${pt.name}</span><button data-a="paintNext" aria-label="next paint">›</button></div>
+    <p class="muted" style="margin-top:calc(var(--u)*8)">🏅 ${RANKS[r].name} · ${S.xp} XP${next ? ' · next rank at ' + next.xp : ''}${S.best ? ' · best run ₹' + S.best : ''}</p>
+    <div class="row"><button class="btn ghost" data-a="mute">${S.muted ? '🔇 Sound off' : '🔊 Sound on'}</button></div>
+    <p class="tiny">No sign-up. Progress saves in this browser.</p>`);
+}
+function showHow() {
+  showOverlay(`<h2>How to play</h2>
+    <p>🙋 <b>Pick up</b> people waving at the curb: drive in the edge lane next to them.</p>
+    <p>🏮 <b>Drop them</b> by driving into <b>your glowing pandal gate</b>. Follow the ◀ DROP / DROP ▶ arrow.</p>
+    <p>⏱ Watch the <b>meter bar</b>. Smooth driving = happy passengers = tips.</p>
+    <p>🚋 Dodge trams, buses, rickshaws, cows and potholes. Crashes hurt your taxi.</p>
+    <p>📯 <b>Honk</b> to shove ZipCabs, cows and rivals away.</p>
+    <p>😈 <b>Showdown:</b> ram your rival from the side to <b>steal their passenger!</b></p>
+    <p>🌅 <b>Story:</b> pay the malik's rent by dawn. 3 strikes and the taxi is scrapped.</p>
+    ${controlsHTML()}
+    <button class="btn" data-a="menu" data-primary>Got it</button>`);
+}
+function showJournal() {
+  const html = CHARS.map(c => S.journal[c.id]
+    ? `<div class="card"><span class="em">${c.emoji}</span><b>${esc(c.name)}</b>“${esc(c.story)}”</div>`
+    : `<div class="card locked"><span class="em">❔</span><b>???</b>Deliver this passenger to unlock their story.</div>`).join('');
+  showOverlay(`<h2>📖 Story Cards</h2><p class="muted">Every passenger has a story. Collect all ${CHARS.length}.</p><div class="cards">${html}</div><button class="btn" data-a="menu" data-primary>Back</button>`);
+}
+function showIntro() {
+  G.state = 'intro';
+  if (G.mode === '1p') {
+    const n = NIGHTS[G.night];
+    showOverlay(`<p class="muted">NIGHT ${G.night + 1} OF 5</p><h2>${n.name}</h2><div class="bn">${n.bn}</div>
+      <div class="banner">The malik wants <b>₹${n.rent}</b> by dawn</div>
+      <p><b>${esc(n.tip)}</b></p>
+      ${G.night === 0 ? '<p class="muted">You have 75 seconds. Miss rent = a strike. 3 strikes = scrapped.</p>' : ''}
+      ${G.night === 0 ? controlsHTML() : ''}
+      <button class="btn" data-a="go" data-primary>START THE NIGHT ▶</button>`);
+  } else {
+    showOverlay(`<p class="muted">FIRST TO 2 ROUNDS WINS</p><h2>Round ${G.round}</h2>
+      <div class="vs"><span class="p1">P1 ${G.wins[0]}</span><span>–</span><span class="p2">${G.wins[1]} P2</span></div>
+      <p><b>Most money in 60 seconds wins the round.</b><br>Ram your rival from the side to <b>steal their passenger</b>. Honk to shove them.</p>
+      ${controlsHTML()}
+      <button class="btn red" data-a="go" data-primary>FIGHT! ▶</button>`);
+  }
+}
+function showDawn() {
+  const t = G.taxis[0], r = G.lastResult, next = NIGHTS[G.night + 1];
+  const stories = G.nightStories.slice(0, 4).map(c => `<div class="card"><span class="em">${c.emoji}</span><b>${esc(c.name)}</b>“${esc(c.story)}”</div>`).join('');
+  const repairCost = Math.ceil((100 - t.hp) * 1.5 / 5) * 5;
+  const shop = Object.keys(UPGRADES).map(k => {
+    const u = UPGRADES[k], lv = G.up[k];
+    if (lv >= u.max) return `<button class="btn ghost" disabled>${u.icon} ${u.name} MAX</button>`;
+    const cost = u.cost[lv];
+    return `<button class="btn ghost" data-a="buy" data-k="${k}" ${t.wallet < cost ? 'disabled' : ''}>${u.icon} ${u.name} Lv${lv + 1}<br><span class="muted">${u.desc} · ₹${cost}</span></button>`;
+  }).join('');
+  showOverlay(`<p class="muted">🌅 DAWN AFTER ${G.cfg.name.toUpperCase()}</p>
+    <p>Tonight's fares: <b>₹${r.tonight}</b> · Wallet: <b>₹${r.before}</b> · Rent: <b>₹${r.rent}</b></p>
+    <div class="big ${r.paid ? 'ok' : 'bad'}">${r.paid ? 'RENT PAID ✅' : 'STRIKE ' + G.strikes + '/3 ❌'}</div>
+    <p class="muted">${r.paid ? 'The malik counts the notes twice and grunts. The taxi lives another night.' : 'The malik shakes his head. "One more miss and she goes to the scrapyard."'}</p>
+    ${stories ? `<h3>Passengers tonight</h3><div class="cards">${stories}</div>` : ''}
+    <h3>Garage · savings ₹${t.wallet}</h3>
+    <div class="shop">
+      <button class="btn ghost" data-a="repair" ${t.hp >= 100 || t.wallet < repairCost ? 'disabled' : ''}>🔧 Repair ${Math.round(t.hp)}%→100%<br><span class="muted">${t.hp >= 100 ? 'no dents!' : '₹' + repairCost}</span></button>
+      ${shop}
+    </div>
+    <p class="muted">Dents carry over. Savings count toward tomorrow's rent.</p>
+    <button class="btn" data-a="nextNight" data-primary>${next.name.toUpperCase()} NIGHT ▶ (rent ₹${next.rent})</button>`);
+}
+function showRound() {
+  const r = G.lastResult;
+  const champ = G.wins[0] >= 2 ? 0 : G.wins[1] >= 2 ? 1 : -1;
+  const msg = r.w < 0 ? 'DRAW!' : `<span class="${r.w === 0 ? 'p1' : 'p2'}">PLAYER ${r.w + 1} WINS THE ROUND</span>`;
+  if (champ >= 0) {
+    showOverlay(`<p class="muted">SHOWDOWN OVER</p><h2 class="${champ === 0 ? 'p1' : 'p2'}">🏆 PLAYER ${champ + 1}<br>RULES THE ROAD</h2>
+      <div class="vs"><span class="p1">P1 ${G.wins[0]}</span><span>–</span><span class="p2">${G.wins[1]} P2</span></div>
+      <p>Last round: <span class="p1">₹${r.a}</span> vs <span class="p2">₹${r.b}</span></p>
+      <button class="btn red" data-a="play2" data-primary>⚔ REMATCH</button>
+      <button class="btn ghost" data-a="menu">Menu</button>`);
+  } else {
+    G.round++;
+    showOverlay(`<h2>${msg}</h2><div class="vs"><span class="p1">₹${r.a}</span><span>vs</span><span class="p2">₹${r.b}</span></div>
+      <div class="vs"><span class="p1">P1 ${G.wins[0]} ★</span><span>–</span><span class="p2">★ ${G.wins[1]} P2</span></div>
+      <button class="btn red" data-a="nextRound" data-primary>ROUND ${G.round} ▶</button>
+      <button class="btn ghost" data-a="menu">Quit to menu</button>`);
+  }
+}
+function showEnd(won, score, newBest) {
+  const r = rankIndex(S.xp);
+  const beatMsg = CHALLENGE ? (score > CHALLENGE.beat ? `<div class="banner">🏁 You beat ${esc(CHALLENGE.from)}'s ₹${CHALLENGE.beat}!</div>` : `<div class="banner">🏁 ${esc(CHALLENGE.from)}'s ₹${CHALLENGE.beat} still stands. One more night?</div>`) : '';
+  const story = won
+    ? `<p>Dawn on Dashami. The idols sail down the Ganga to the beat of a hundred dhaks. The malik counts every note, then pats the bonnet. <b>"One more year, old girl."</b></p><p><b>The last yellow Ambassador lives.</b></p>`
+    : `<p>The tow truck arrives at sunrise. The malik won't look at you. Somewhere a ZipCab honks.</p><p><b>But Pujo comes every year. So do second chances.</b></p>`;
+  showOverlay(`<div style="font-size:calc(var(--u)*60)">${won ? '🏆' : '🚧'}</div>
+    <h2>${won ? 'THE TAXI LIVES!' : 'SCRAPPED!'}</h2>${story}
+    <div class="big">₹${score}</div><p class="muted">total earned${newBest ? ' · <b class="ok">NEW BEST!</b>' : ' · best ₹' + S.best} · +${G.xpGained} XP · ${RANKS[r].name}${G.newCards ? ' · ' + G.newCards + ' new story card' + (G.newCards > 1 ? 's' : '') : ''}</p>
+    ${beatMsg}
+    <button class="btn" data-a="play1" data-primary>${won ? 'PLAY AGAIN' : 'TRY AGAIN'} ▶</button>
+    <input class="name" id="cname" maxlength="20" placeholder="Your name for the challenge link">
+    <button class="btn teal" data-a="challenge" data-score="${score}">🔗 Copy challenge link</button>
+    <p class="tiny" id="cmsg"></p>
+    <button class="btn ghost" data-a="menu">Menu</button>`);
+}
+function pause() {
+  if (G.state !== 'play') return;
+  G.state = 'paused';
+  for (const k in keys) keys[k] = false;
+  pointers.clear();
+  showOverlay(`<h2>Paused</h2><button class="btn" data-a="resume" data-primary>▶ Resume</button>
+    <button class="btn ghost" data-a="mute">${S.muted ? '🔇 Sound off' : '🔊 Sound on'}</button>
+    <button class="btn ghost" data-a="quit">Quit to menu</button>`);
+}
+function resume() { if (G.state !== 'paused') return; hideOverlay(); G.state = 'play'; last = performance.now(); }
+
+const ACTIONS = {
+  play1: () => startStory(),
+  play2: () => startShowdown(),
+  journal: () => showJournal(),
+  how: () => showHow(),
+  menu: () => showMenu(),
+  go: () => beginPlay(),
+  resume: () => resume(),
+  quit: () => showMenu(),
+  mute: () => { setMuted(!S.muted); if (G.state === 'paused') { G.state = 'play'; pause(); } else showMenu(); },
+  paintPrev: () => { const r = rankIndex(S.xp); S.paint = (Math.min(S.paint, r) + r) % (r + 1); save(); showMenu(); if (r === 0) flashLocked(); },
+  paintNext: () => { const r = rankIndex(S.xp); S.paint = (Math.min(S.paint, r) + 1) % (r + 1); save(); showMenu(); if (r === 0) flashLocked(); },
+  nextNight: () => { G.night++; showIntro(); },
+  nextRound: () => showIntro(),
+  buy: b => { const k = b.getAttribute('data-k'), u = UPGRADES[k], t = G.taxis[0]; const lv = G.up[k]; if (!u || lv >= u.max) return; const cost = u.cost[lv]; if (t.wallet < cost) return; t.wallet -= cost; G.up[k]++; SFX.coin(); showDawn(); },
+  repair: () => { const t = G.taxis[0]; const cost = Math.ceil((100 - t.hp) * 1.5 / 5) * 5; if (t.wallet < cost) return; t.wallet -= cost; t.hp = 100; SFX.coin(); showDawn(); },
+  challenge: b => {
+    const score = parseInt(b.getAttribute('data-score'), 10) || 0;
+    const nameEl = document.getElementById('cname');
+    const name = ((nameEl && nameEl.value) || 'A friend').replace(/[^\p{L}\p{N} ._-]/gu, '').slice(0, 20) || 'A friend';
+    const url = location.origin + location.pathname + '?beat=' + score + '&from=' + encodeURIComponent(name);
+    const msg = document.getElementById('cmsg');
+    const done = ok => { if (msg) msg.textContent = ok ? 'Copied! Send it to a friend.' : url; };
+    try { if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(url).then(() => done(true), () => done(false)); else done(false); }
+    catch (e) { done(false); }
+  },
+};
+function flashLocked() {
+  const p = overlay.querySelector('.paint span');
+  if (p) p.innerHTML += ' <span class="muted">· earn XP to unlock more paints</span>';
+}
+
+// ---------------------------------------------------------------- boot
+// Debug/test hook (used by automated tests; harmless for players)
+window.__PNR = { G, S, keys, startStory, startShowdown, beginPlay, endNight, ACTIONS, step: (n, dt) => { for (let i = 0; i < n; i++) update(dt); draw(); } };
+showMenu();
+requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
